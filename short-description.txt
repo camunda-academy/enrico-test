@@ -1,0 +1,1 @@
+This course will provide you with the hands-on skills required to model robust DMN models using the Camunda Platform
