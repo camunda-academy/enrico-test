@@ -34,6 +34,8 @@ Create a Cawemo account by following the steps below:
 
 1. Confirm that your account has been created successfully by attempting to [login](https://cawemo.com/login)
 
+1. You will also be sent a confirmation link via email. To complete the registration you must click on this link, otherwise you will lose access to your account after 24 hours
+
 ### Camunda Modeler
 
 Download and install the [Camunda Modeler](https://camunda.com/download/modeler) by following the steps below:
