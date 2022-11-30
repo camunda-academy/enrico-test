@@ -9,6 +9,9 @@ This course will provide you with the hands-on skills required to model robust D
 
     Please see the [Frequently Asked Questions](/frequently-asked-questions) for more information about our Instructor Led courses.
 
+!!! note "Deutsch"
+    Dieser Kurs ist auch auf [Deutsch](/camunda-dmn-ilt-de) verfügbar.
+
 ### What Will I Learn?
 
 At the end of this course you will be able to:
