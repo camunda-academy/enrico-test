@@ -9,6 +9,8 @@ This course will provide you with the hands-on skills required to model robust D
 
     Please see the [Frequently Asked Questions](/frequently-asked-questions) for more information about our Instructor Led courses.
 
+    **Price (excl. VAT):** 499 EUR / 499 USD
+
 !!! note "Deutsch"
     Dieser Kurs ist auch auf [Deutsch](/camunda-dmn-ilt-de) verfügbar.
 
