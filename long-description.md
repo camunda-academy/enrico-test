@@ -5,8 +5,6 @@ This course will provide you with the hands-on skills required to model robust D
 !!! note "Instructor Led"
     This training will be held remotely over one day from 09:00 - 17:00. We will be using [Zoom](https://zoom.us/) for the Virtual Classroom.
 
-    You can see the dates and current availability for this course under the **Instructor Sessions** section at the bottom of this page.
-
     Please see the [Frequently Asked Questions](/frequently-asked-questions) for more information about our Instructor Led courses.
 
     **Price (excl. VAT):** 499 EUR / 499 USD
