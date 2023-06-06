@@ -1,10 +1,15 @@
 Please ensure that you have completed the following preparation before attempting to join the Virtual Classroom.
 
-* Perform a [Zoom Connection Test](https://zoom.us/test)
+* Perform a [Zoom Connection Test](https://zoom.us/test) (Optional)
 * Create an account with [Cawemo](https://cawemo.com/#c7-cawemo-signup)
 * Download and install [Camunda Modeler](https://camunda.com/download/modeler)
 
-### Zoom Connection Test
+### Zoom Connection Test (Optional)
+
+!!! note "Virtual Meeting Platform"
+    Your Trainer will be using [Zoom](https://zoom.us/) unless your organization has requested an alternative virtual meeting platform e.g. [Microsoft Teams](https://www.microsoft.com/en-gb/microsoft-teams).
+
+    This step can be skipped if your invitation does not include a Zoom link.
 
 Perform a Zoom Connection Test by following the steps below:
 
