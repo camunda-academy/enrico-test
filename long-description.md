@@ -25,7 +25,7 @@ This course will provide you with the hands-on skills required to model robust D
 
     **Price**: [Contact Training for Pricing](https://camunda.com/contact-training/)
 
-!!! note "Deutsch"
+??? note "Deutsch"
     Dieser Kurs ist auch auf [Deutsch](/camunda-dmn-ilt-de) verfügbar.
 
 ### What Will I Learn?
