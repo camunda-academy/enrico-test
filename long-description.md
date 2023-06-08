@@ -2,12 +2,28 @@
 
 This course will provide you with the hands-on skills required to model robust DMN models using the Camunda Platform.
 
-!!! note "Instructor Led"
-    This training will be held remotely over one day from 09:00 - 17:00. We will be using [Zoom](https://zoom.us/) for the Virtual Classroom.
+???+ note "Public Classroom"
+    This training will be held remotely over one day. The training will take place as follows:
+
+    * CET timezone: 09:00 - 17:00 with an hour of lunch break
+    * ET timezone: 10:00 - 18:00 with an hour of lunch break
+
+    We will be using [Zoom](https://zoom.us/) for the Virtual Classroom.
 
     Please see the [Frequently Asked Questions](/frequently-asked-questions) for more information about our Instructor Led courses.
 
-    **Price (excl. VAT):** 499 EUR / 499 USD
+    **Price (excl. VAT):** 499 EUR / 499 USD USD per person
+
+??? note "Private Classroom"
+    Private Classroom courses can be delivered virtually or onsite at a location of your choice. Additional regional travel fees will apply if the onsite option is chosen.
+
+    Virtual courses are normally delivered over [Zoom](https://zoom.us/). However, an alternative virtual meeting platform can be used if required e.g. Microsoft Teams.
+
+    This course will be delivered over one day.
+
+    Please see the [Frequently Asked Questions](/frequently-asked-questions) for more information about our Instructor Led courses.
+
+    **Price**: [Contact Training for Pricing](https://camunda.com/contact-training/)
 
 !!! note "Deutsch"
     Dieser Kurs ist auch auf [Deutsch](/camunda-dmn-ilt-de) verfügbar.
