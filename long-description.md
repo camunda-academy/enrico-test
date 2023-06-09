@@ -53,7 +53,7 @@ This course is targeted at the following roles:
 * Business Analyst
 * Developer
 
-**Time Required:** 8 Hours (1 Days x 8 Hours)
+**Time Required:** 8 Hours (1 Day x 8 Hours)
 
 **Difficulty:** Foundation
 
