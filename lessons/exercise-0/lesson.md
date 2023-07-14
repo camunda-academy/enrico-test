@@ -8,7 +8,7 @@ Draw the DRD and the implement the Decision table as described below.
 1.	Create a `New` ==> `File` ==> `DMN Diagram`
 2.	Draw this DRD
 
-  ![dmn diagram](simpleDishDrd.png | width=50)
+  <img src="simpleDishDrd.png" width="50%"/>
 
 3.	Make the Decision a DMN Table (by using the wrench icon)
 4.	Click the Icon in the Dish Decision and select Decision Table. This should switch the DMN Table implementation
