@@ -1,9 +1,9 @@
 Please ensure that you have completed the following preparation before attempting to join the Virtual Classroom.
 
 * Review Joining Instructions
-* Create an account with [Cawemo](https://cawemo.com/#c7-cawemo-signup)
-* Download and install [Camunda Modeler](https://camunda.com/download/modeler)
-  
+* Perform a Zoom Connection Test
+* Create an account with [Camunda Platform SaaS](https://signup.camunda.com/accounts)
+
 ### Review Joining Instructions
 
 Review the joining instructions for your course by following the steps below:
@@ -18,7 +18,7 @@ Review the joining instructions for your course by following the steps below:
 
     !!! note "Virtual Meeting Platform"
         Your Trainer will be using [Zoom](https://zoom.us/) unless your organization has requested an alternative virtual meeting platform e.g. [Microsoft Teams](https://www.microsoft.com/en-gb/microsoft-teams).
-        
+
         The Zoom Connection Test can be skipped if your invitation does not include a Zoom link.
 
 #### Zoom Connection Test
@@ -39,31 +39,20 @@ Perform a Zoom Connection Test by following the steps below:
 
 6. Click **End Test** if all of your devices are working as expected
 
-### Cawemo
+### Camunda 8 SaaS
 
-Create a Cawemo account by following the steps below:
+Follow the steps below to create your Camunda 8 SaaS account:
 
-1. Navigate to [Cawemo](https://cawemo.com/#c7-cawemo-signup) and click **Sign up for free for Cawemo**
+1. Navigate to [Camunda Platform SaaS](https://signup.camunda.com/accounts)
 
-1. Enter your Name, Email Address and Password to create an account
+    ![Camunda 8 SaaS](create-account.png)
 
-    ![Create Account](cawemo.png)
+2. You can either complete the form and submit or sign in using your existing Google or GitHub account.
 
-1. Confirm that your account has been created successfully by attempting to [login](https://cawemo.com/login)
+3. If you created an account by filling out the form, you will receive a confirmation email. Click on the included link to verify your email address and set a password.
 
-1. You will also be sent a confirmation link via email. To complete the registration you must click on this link, otherwise you will lose access to your account after 24 hours
+4. If you created an account by using Google or GitHub, you will be automatically redirected to the [Camunda 8 Console](https://console.cloud.camunda.io/).
 
-### Camunda Modeler
-
-Download and install the [Camunda Modeler](https://camunda.com/download/modeler) by following the steps below:
-
-1. Navigate to [Camunda Modeler](https://camunda.com/download/modeler)
-
-1. Download the correct version for your machine and unzip in a folder of your choice
-
-    ![Modeler](modeler.png)
-
-1. Run Camunda Modeler.exe (Windows), Camunda Modeler.app (Mac) or camunda-modeler (Linux) to launch the Modeler
 
 !!! success "Preparation Completed"
     Congratulations! You are now ready to join the virtual classroom.

@@ -18,7 +18,7 @@ Dieser Kurs vermittelt Ihnen die praktischen Fähigkeiten, die erforderlich sind
 
     Für Online-Trainings verwenden wir normalerweise [Zoom](https://zoom.us/). Bei Bedarf kann eine alternative virtuelle Meeting-Plattform genutzt werden, z.B. Microsoft Teams.
 
-    Dieser Kurs findet an einem Tag statt. 
+    Dieser Kurs findet an einem Tag statt.
 
     Der Kurs wird in deutscher Sprache gehalten. Die Trainingsfolien und Übungen sind allerdings auf Englisch.
 
@@ -80,5 +80,4 @@ Dieser Kurs setzt voraus, dass der/die Teilnehmer/in vor dem Beitritt zum virtue
 
 * Zugriff auf einen Laptop mit Webcam, Lautsprechern und Mikrofon vorhanden
 * [Zoom-Verbindungstest](https://zoom.us/test) durchgeführt
-* Konto bei [Cawemo](https://cawemo.com/#c7-cawemo-signup) erstellt
-* [Camunda Modeler](https://camunda.com/download/modeler) heruntergeladen und installiert
+* Konto bei [Camunda Platform SaaS](https://signup.camunda.com/accounts) erstellt

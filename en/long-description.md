@@ -79,5 +79,4 @@ This course presumes that the student has completed the following prior to joini
 
 * Has access to a laptop with a webcam, speakers and a microphone
 * Performed a [Zoom Connection Test](https://zoom.us/test)
-* Created an account with [Cawemo](https://cawemo.com/#c7-cawemo-signup)
-* Downloaded and installed [Camunda Modeler](https://camunda.com/download/modeler)
+* Created an account with [Camunda Platform SaaS](https://signup.camunda.com/accounts)
