@@ -80,3 +80,5 @@ This course presumes that the student has completed the following prior to joini
 * Has access to a laptop with a webcam, speakers and a microphone
 * Performed a [Zoom Connection Test](https://zoom.us/test)
 * Created an account with [Camunda Platform SaaS](https://signup.camunda.com/accounts)
+
+[![Camunda Forums](https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2Fdny8xs5ynhap11zaf87r664oy%2Fpublic%2F1694166511%2Fforum-logo.1694166511260.png)](https://forum.camunda.io/)
