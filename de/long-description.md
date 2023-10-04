@@ -81,3 +81,5 @@ Dieser Kurs setzt voraus, dass der/die Teilnehmer/in vor dem Beitritt zum virtue
 * Zugriff auf einen Laptop mit Webcam, Lautsprechern und Mikrofon vorhanden
 * [Zoom-Verbindungstest](https://zoom.us/test) durchgeführt
 * Konto bei [Camunda Platform SaaS](https://signup.camunda.com/accounts) erstellt
+
+[![Camunda Forums](https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2Fdny8xs5ynhap11zaf87r664oy%2Fpublic%2F1694166511%2Fforum-logo.1694166511260.png)](https://forum.camunda.io/)
