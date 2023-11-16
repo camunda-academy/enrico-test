@@ -10,18 +10,19 @@ Over time the Business Process has changed and several rules have been introduce
 
 <img src="Lab4-SourceModel.png" width="60%"/>
 
-1. Identify business rules leading up to Additional Background Check task as per the following image.
+2. Identify business rules leading up to Additional Background Check task as per the following image.
 
-<img src="Lab4-SourceModelZoom.png" width="40%"/>
+<img src="Lab4-SourceModelZoom.png" width="30%"/>
 
-2. Create a new DMN table that implement these business rules. Please use the id=`additionalBackgroundCheck`
-3. Test the DMN table individually, with the provided `Exercise4process.bpmn`
+3. Create a new DMN table that implement these business rules. Please use the id=`additionalBackgroundCheck`
+4. Create a process like you did in the previous exercises to test the DMN table individually.
+
    An example of input is the following: `{"knownCustomer":true,"loanAmount":1000,"employment":"self-employed"}`
 
 ### Bonus
 
 You can execute the whole business process that includes this Decision table and the one created in the previous exercise
-through the following process: `CompleteCarLoanProcess.bpmn`
+through the following process: `CompleteCarLoanProcess.bpmn` (you can upload it from the training resources)
 
 <img src="CompleteCarLoanProcess.png" width="60%"/>
 

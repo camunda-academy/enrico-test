@@ -10,7 +10,7 @@ As the calculation of the Affordability as Input is a Business Rule itself we wa
 - The affordability in turn depends on a Decision where the ratio of debt to the borrowers remaining income (`debt2RemainingIncomeRatio`) is being calculated.
 - The resulting DRD should look like this:
 
-<img src="Lab3-TargetModel.png" width="60%"/>
+<img src="Lab3-TargetModel.png" width="50%"/>
 
 That ratio can be calculated as:
 
@@ -20,13 +20,13 @@ The values for `installmentRate`, `borrowersIncome` and `expenses` will be provi
 
 Rules:
 
-- For a Debt2IncomeRatio less than 50 (`<50`) the Affordability is `"affordable"`
-- For a Debt2IncomeRatio between 50 and 74.9 (`[50..75[`) the Affordability is `"marginal"`
-- For a Debt2IncomeRatio greater than 75(`>=75`) the Affordability is `"unaffordable"`
+- For a Debt2IncomeRatio less than 50 (`<50`) the Affordability is `affordable`
+- For a Debt2IncomeRatio between 50 and 74.9 (`[50..75[`) the Affordability is `marginal`
+- For a Debt2IncomeRatio greater than 75(`>=75`) the Affordability is `unaffordable`
 
 Hint:
 
-- Model first the DRD with the Decisions `"Affordability"`, `"Debt to Remaining Income Ratio"` and `"Remaining Income"`
+- Model first the DRD with the Decisions `Affordability`, `Debt to Remaining Income Ratio` and `Remaining Income`
 - Add the needed Input Data.
 - Connect them as needed.
 - Then implement the logic as shown above.
