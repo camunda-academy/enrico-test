@@ -26,7 +26,7 @@ In summary, depending on the level of affordability and the given credit score w
 
 ### Create a BPMN process for testing
 
-1. create a process to test your diagram, and configure the business task.
+5. create a process to test your diagram, and configure the business task.
 
 We'll call it `Exercise1-2-3Process` and we'll reuse it also in the next exercises.
 

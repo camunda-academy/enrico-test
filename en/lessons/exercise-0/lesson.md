@@ -22,7 +22,7 @@ Draw the DRD and then implement the Decision table as described below.
 
 <img src="simpleDishDrd.png" width="30%"/>
 
-1. Select the "Dish" Decision Table and give the following ID: "dishDecision" (property panel to the right)
+5. Select the "Dish" Decision Table and give the following ID: "dishDecision" (property panel to the right)
 
 <img src="renameDecisionTable.png" width="80%"/>
 
