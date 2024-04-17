@@ -46,16 +46,16 @@ Let's create it!
 
 <img src="playTab.png" alt="Play Tab" width="50%" height="auto">
 
-8. A popup will appear showing the progress of the cluster creation. When ready it should show a button: "Start a process instance".
-9. Click on it to close the popup.
-10. You have just accessed the test environment called Zeebe Play. We will use it to test our Decision table.
+9. A popup will appear showing the progress of the cluster creation. When ready it should show a button: "Start a process instance".
+10. Click on it to close the popup.
+11. You have just accessed the test environment called Zeebe Play. We will use it to test our Decision table.
 
-11. Click on the small three dots symbol to the right of the arrow to select the "Start instance with variables" options.
-12. We want to start a process instance by passing the variables required by the DMN table.
+12. Click on the small three dots symbol to the right of the arrow to select the "Start instance with variables" options.
+13. We want to start a process instance by passing the variables required by the DMN table.
 
 <img src="selectWithVariables.png" alt="Provide variables" width="50%" height="auto">
 
-11. A text box will open: insert the values that match the inputs of your Decision table. For instance:
+14. A text box will open: insert the values that match the inputs of your Decision table. For instance:
 
 ```
 {"season":"spring","vegetarian":false}
@@ -65,5 +65,5 @@ The process will be executed, and you should get a status similar to the followi
 
 <img src="processExecuted.png" alt="Executed process" width="50%" height="auto">
 
-12. In the variables list you will see the variable you have defined in the process which is representing the output of the decision table.
-13. You can follow this method to test the other rules.
+15. In the variables list you will see the variable you have defined in the process which is representing the output of the decision table.
+16. You can follow this method to test the other rules.
