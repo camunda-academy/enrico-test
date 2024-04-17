@@ -18,7 +18,8 @@ Let's create it!
 
 3. Give it a name and an ID as in the image above.
 
-4. Select the task and click on the **Wrench** icon. From there select the Business Rule task.
+4. Select the task and click on the symbol with two round shapes on the top left.
+5. From there select the Business Rule task.
 
    <img src="chooseBusinessRule.png" alt="choose business rule" width="40%">
 
@@ -26,11 +27,13 @@ Let's create it!
 
    <img src="businessRuleTaskAdded.png" alt="choose business rule" width="70%" height="auto">
 
-5. On the Property panel (right side of the screen) configure the Implementation:
+6. Select the blue link icon that just popped up on top of the task
 
-   - In the Drop down select **Dmn Decision** as implementation.
+   - A popup will open with a list of available decisions.
 
-   - In the Called Decision section give the **Decision ID** you've defined in the previous exercise.
+   - Select the one you created in the previous exercise and click on it.
+
+   - Now check the property panel of the task to the right, the Decision ID should have been updated automatically.
 
    - Define also a name for the **result variable**.
 
@@ -38,35 +41,29 @@ Let's create it!
 
    <img src="businessRuleConfiguration.png" alt="business rule configuration" width="50%" height="auto">
 
-6. Now we can test our decision by simulating the start of a new process instance with the Play tool.
-7. Click on the "Play" tab and wait for the window to popup.
+7. Now we can test our decision by simulating the start of a new process instance with the Play tool.
+8. Click on the "Play" tab in order to create the Play environment for testing.
 
 <img src="playTab.png" alt="Play Tab" width="50%" height="auto">
 
-8. A white window should popup with the Business Process on it. This is a Test environment called Zeebe Play.
-   We will use it to test our Decision table.
-9. Click on the **chooseDishProcess** link.
+8. A popup will appear showing the progress of the cluster creation. When ready it should show a button: "Start a process instance".
+9. Click on it to close the popup.
+10. You have just accessed the test environment called Zeebe Play. We will use it to test our Decision table.
 
-<img src="selectProcesses.png" alt="Select Processes" width="50%" height="auto">
-
-10. Click on the small arrow to select the "with variables" options. We want to start a process instance by passing th variables required by the DMN table.
+11. Click on the small three dots symbol to the right of the arrow to select the "Start instance with variables" options.
+12. We want to start a process instance by passing the variables required by the DMN table.
 
 <img src="selectWithVariables.png" alt="Provide variables" width="50%" height="auto">
 
-11. in the text box provide values that match the inputs of your Decision table. For instance:
+11. A text box will open: insert the values that match the inputs of your Decision table. For instance:
 
 ```
 {"season":"spring","vegetarian":false}
 ```
 
-The process will be executed, and you should get a similar status to the following:
+The process will be executed, and you should get a status similar to the following:
 
 <img src="processExecuted.png" alt="Executed process" width="50%" height="auto">
 
-12. Click on the **Decision Evaluations** tab and then on the **Decision Evaluation key** as shown in the picture.
-
-<img src="decisionTab.png" alt="Decision table" width="50%" height="auto">
-
-13. The Business Rule executed will be shown in a new window.
-
-<img src="decisionTableResults.png" alt="Decision table results" width="50%" height="auto">
+12. In the variables list you will see the variable you have defined in the process which is representing the output of the decision table.
+13. You can follow this method to test the other rules.

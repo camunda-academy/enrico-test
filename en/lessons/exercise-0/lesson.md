@@ -7,7 +7,7 @@ Draw the DRD and then implement the Decision table as described below.
 
 ### Instructions
 
-1. Connect to the [Camunda Modeler](https://camunda.io)
+1. Connect to the [Camunda Web Modeler](https://camunda.io)
 
 2. Create a new folder (if you haven't created one already)
 
