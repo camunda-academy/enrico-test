@@ -1,0 +1,32 @@
+name: Print Updated Resources
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  print-changes:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install git
+        run: sudo apt-get install git -y
+
+      - name: Get changed .md and .html files
+        id: files
+        run: |
+          git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E "\.md$|\.html$" > changed_md_html_files.txt
+          echo "::set-output name=changed_files::$(cat changed_md_html_files.txt)"
+
+      - name: Print changed .md and .html files
+        run: |
+          echo "Changed .md and .html files in this push:"
+          if [ -s changed_md_html_files.txt ]; then
+              cat changed_md_html_files.txt
+          else
+              echo "No changes detected in .md or .html files."
+          fi
