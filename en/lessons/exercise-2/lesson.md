@@ -35,3 +35,5 @@ As per the Car Loan Granting Decision Table the Risk Level input options should 
 - For the test, an example of input is the following: `{"creditScore":82,"affordability":"affordable"}`
 
 - Try other input combinations as well
+
+Updated!
