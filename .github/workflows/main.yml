@@ -17,9 +17,14 @@ jobs:
         run: sudo apt-get install git -y
 
       - name: Get changed .md and .html files
-        id: files
         run: |
-          git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E "\.md$|\.html$" > changed_md_html_files.txt
+          if git rev-parse --verify ${{ github.event.before }} >& /dev/null; then
+            GIT_RANGE="${{ github.event.before }}..${{ github.sha }}"
+          else
+            echo "Fallback to listing all .md and .html files due to invalid range."
+            GIT_RANGE="$(git rev-list --max-parents=0 HEAD)..${{ github.sha }}"
+          fi
+          git diff --name-only $GIT_RANGE | grep -E "\.md$|\.html$" > changed_md_html_files.txt
           echo "::set-output name=changed_files::$(cat changed_md_html_files.txt)"
 
       - name: Print changed .md and .html files
