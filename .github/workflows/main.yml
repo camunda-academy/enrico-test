@@ -30,3 +30,24 @@ jobs:
           for file in ${ALL_CHANGED_FILES}; do
             echo "$file was changed"
           done
+  download-jar:
+    runs-on: ubuntu-latest
+    outputs:
+      jar-path: ${{ steps.setup-jar-path.outputs.jar-path }}
+    
+    steps:
+      - name: Setup Jar File Path
+        id: setup-jar-path
+        run: echo "jar-path=academy-md-html-0.2.jar" >> $GITHUB_ENV
+      
+      - name: Download Release Artifact from Repository B
+        run: |
+          curl -L -o ${{ env.jar-path }} \
+          "https://github.com/orgname/repository-b/releases/download/v0.2/${{ env.jar-path }}" \
+          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}"
+      
+      - name: Upload Jar to Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: academy-md-html-jar
+          path: ${{ env.jar-path }}
