@@ -23,7 +23,9 @@ jobs:
         with:
           files: |
              **.md
-             
+             **.png
+             **.jpg
+             **.jpeg
       - name: Check for Markdown changes
         id: set_output
         run: echo "::set-output name=files_changed::${{ steps.changed-markdown-files.outputs.any_changed == 'true' }}"
