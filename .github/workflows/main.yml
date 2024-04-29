@@ -45,7 +45,7 @@ jobs:
         run: |
           curl -fSL -o ${{ env.jar-path }} \
           "https://github.com/camunda-academy/academy-md-html/releases/download/v0.2/${{ env.jar-path }}" \
-          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}"
+          -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}"
       
       - name: Upload Jar to Artifacts
         uses: actions/upload-artifact@v3
