@@ -37,6 +37,9 @@ jobs:
       jar-path: ${{ steps.setup-jar-path.outputs.jar-path }}
     
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
       - name: Setup Jar File Path
         id: setup-jar-path
         run: echo "jar-path=academy-md-html-0.2.jar" >> $GITHUB_ENV
@@ -53,10 +56,10 @@ jobs:
         with:
           name: academy-md-html-jar
           path: ${{ env.jar-path }}
-
-      - name: Checkout code
-        uses: actions/checkout@v4
-          
+        
+      - name: List files in the directory
+        run: ls -lah
+        
       - name: Execute JAR file
         run: java -jar ${{ env.jar-path }} ./en
 
