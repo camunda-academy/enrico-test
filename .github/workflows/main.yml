@@ -31,6 +31,7 @@ jobs:
             echo "$file was changed"
           done
   create-target:
+    needs: changed_files
     runs-on: ubuntu-latest
     outputs:
       jar-path: ${{ steps.setup-jar-path.outputs.jar-path }}
@@ -42,7 +43,7 @@ jobs:
       
       - name: Download Release builder Artifact from Repository "academy-md-html"
         run: |
-          curl -L -o ${{ env.jar-path }} \
+          curl -fSL -o ${{ env.jar-path }} \
           "https://github.com/camunda-academy/academy-md-html/releases/download/v0.2/${{ env.jar-path }}" \
           -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}"
       
@@ -51,6 +52,7 @@ jobs:
         with:
           name: academy-md-html-jar
           path: ${{ env.jar-path }}
+          
       - name: Execute JAR file
         run: java -jar ${{ env.jar-path }} ./en
 
