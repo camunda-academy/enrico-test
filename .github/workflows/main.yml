@@ -61,7 +61,7 @@ jobs:
           curl -fSL -o ${{ env.jar-path }} \
           "https://github.com/ecuriotto/converter-example/releases/download/0.2/${{ env.jar-path }}"
         
-      - name: List files in the directory
+      - name: List files in the directory (debug)
         run: ls -lah
         
       - name: Execute JAR file
@@ -77,15 +77,30 @@ jobs:
           release_name: Release for ${{ github.sha }}
           draft: false
           prerelease: false
-        
-      - name: Find and Upload Each File
+          
+      - name: Download changed markdown files artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: changed-md-files
+
+      - name: Extract relevant ZIP files to upload
         run: |
-          for file in ./en/target/*; do
-            echo "Uploading $file"
-            curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-                 -H "Content-Type: $(file --mime-type -b $file)" \
-                 --data-binary @"$file" \
-                 "https://uploads.github.com/repos/camunda-academy/enrico-test/releases/${{ steps.create_release.outputs.id }}/assets?name=$(basename $file)"
+          grep -oP 'en/lessons/\K[^/]+' changed-md-files.txt > relevant_dirs.txt
+          cat relevant_dirs.txt
+
+        
+      - name: Find and Upload Each Relevant File
+        run: |
+          for dir in $(cat relevant_dirs.txt); do
+            for file in ./en/target/${dir}*.zip; do
+              if [ -f "$file" ]; then
+                echo "Uploading $file"
+                curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                     -H "Content-Type: $(file --mime-type -b $file)" \
+                     --data-binary @"$file" \
+                     "https://uploads.github.com/repos/camunda-academy/enrico-test/releases/${{ steps.create_release.outputs.id }}/assets?name=$(basename $file)"
+              fi
+            done
           done
 
         env:
