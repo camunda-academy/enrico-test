@@ -67,4 +67,4 @@ You can predefine the values for the Season on the input column. This simplifies
 
 For doing that, just click on the "Season" column and add the predefined values on the text box at the bottom.
 
-aabc
+aabcd
