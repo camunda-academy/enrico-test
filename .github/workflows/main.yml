@@ -42,11 +42,12 @@ jobs:
         run: echo "jar-path=academy-md-html-0.2.jar" >> $GITHUB_ENV
       
       - name: Download Release builder Artifact from Repository "academy-md-html"
+        # "https://github.com/camunda-academy/academy-md-html/releases/download/v0.2/${{ env.jar-path }}" \
+        # -H "Authorization: Bearer ${{ secrets.PAT }}"
         run: |
           curl -v -fSL -o ${{ env.jar-path }} \
-          "https://github.com/camunda-academy/academy-md-html/releases/download/v0.2/${{ env.jar-path }}" \
-          -H "Authorization: Bearer ${{ secrets.PAT }}"
-      
+          "https://github.com/ecuriotto/converter-example/releases/download/0.2/${{ env.jar-path }}"
+    
       - name: Upload Jar to Artifacts
         uses: actions/upload-artifact@v3
         with:
