@@ -52,7 +52,7 @@ jobs:
           name: academy-md-html-jar
           path: ${{ env.jar-path }}
       - name: Execute JAR file
-        run: java -jar {{ env.jar-path }} ./en
+        run: java -jar ${{ env.jar-path }} ./en
 
       - name: Create Release
         id: create_release
