@@ -66,3 +66,5 @@ I know you're looking forward to test your decision, in the next Demo we'll see 
 You can predefine the values for the Season on the input column. This simplifies adding new rules, avoids typos and creates an input dictionary.
 
 For doing that, just click on the "Season" column and add the predefined values on the text box at the bottom.
+
+aa
