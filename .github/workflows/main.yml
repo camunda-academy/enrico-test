@@ -14,28 +14,29 @@ jobs:
     name: Test changed-files
     steps:
       - uses: actions/checkout@v4
+
       - name: Get all changed markdown files
         id: changed-markdown-files
         uses: tj-actions/changed-files@v44
         with:
-          # Avoid using single or double quotes for multiline patterns
           files: |
              **.md
 
-      - name: List all changed files markdown files
+      - name: List all changed files markdown files and save to file
         if: steps.changed-markdown-files.outputs.any_changed == 'true'
-        env:
-          ALL_CHANGED_FILES: ${{ steps.changed-markdown-files.outputs.all_changed_files }}
         run: |
-          for file in ${ALL_CHANGED_FILES}; do
-            echo "$file was changed"
-          done
+          echo "${{ steps.changed-markdown-files.outputs.all_changed_files }}" > changed-md-files.txt
+          cat changed-md-files.txt
+
+      - name: Upload changed markdown files as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: changed-md-files
+          path: changed-md-files.txt
   create-target:
     needs: changed_files
     runs-on: ubuntu-latest
-    outputs:
-      jar-path: ${{ steps.setup-jar-path.outputs.jar-path }}
-    
+    if: needs.changed_files.outputs.md_changed == 'true'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
