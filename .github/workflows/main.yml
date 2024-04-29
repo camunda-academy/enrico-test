@@ -69,14 +69,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.sha }}
-          release_name: Release ${{ github.sha }}
+          tag_name: release-${{ github.sha }}
+          release_name: Release for ${{ github.sha }}
           draft: false
           prerelease: false
         
       - name: Find and Upload Each File
         run: |
-          for file in target/*; do
+          for file in ./en/target/*; do
             echo "Uploading $file"
             curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
                  -H "Content-Type: $(file --mime-type -b $file)" \
