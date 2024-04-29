@@ -53,6 +53,9 @@ jobs:
         with:
           name: academy-md-html-jar
           path: ${{ env.jar-path }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
           
       - name: Execute JAR file
         run: java -jar ${{ env.jar-path }} ./en
