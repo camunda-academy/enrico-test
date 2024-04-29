@@ -45,7 +45,7 @@ jobs:
         # "https://github.com/camunda-academy/academy-md-html/releases/download/v0.2/${{ env.jar-path }}" \
         # -H "Authorization: Bearer ${{ secrets.PAT }}"
         run: |
-          curl -v -fSL -o ${{ env.jar-path }} \
+          curl -fSL -o ${{ env.jar-path }} \
           "https://github.com/ecuriotto/converter-example/releases/download/0.2/${{ env.jar-path }}"
     
       - name: Upload Jar to Artifacts
