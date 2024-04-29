@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Test changed-files
     outputs:
-      files_changed: ${{ steps.set_output.outputs.md_changed }} 
+      files_changed: ${{ steps.set_output.outputs.files_changed }} 
     steps:
       - uses: actions/checkout@v4
 
@@ -23,6 +23,10 @@ jobs:
         with:
           files: |
              **.md
+             
+      - name: Check for Markdown changes
+        id: set_output
+        run: echo "::set-output name=files_changed::${{ steps.changed-markdown-files.outputs.any_changed == 'true' }}"
 
       - name: List all changed files markdown files and save to file
         if: steps.changed-markdown-files.outputs.any_changed == 'true'
