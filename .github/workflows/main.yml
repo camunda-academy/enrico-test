@@ -43,7 +43,7 @@ jobs:
       
       - name: Download Release builder Artifact from Repository "academy-md-html"
         run: |
-          curl -fSL -o ${{ env.jar-path }} \
+          curl -v -fSL -o ${{ env.jar-path }} \
           "https://github.com/camunda-academy/academy-md-html/releases/download/v0.2/${{ env.jar-path }}" \
           -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}"
       
