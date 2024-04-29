@@ -81,8 +81,9 @@ jobs:
             curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
                  -H "Content-Type: $(file --mime-type -b $file)" \
                  --data-binary @"$file" \
-                 "${{ steps.create_release.outputs.upload_url }}?name=$(basename $file)"
+                 "https://uploads.github.com/repos/camunda-academy/enrico-test/releases/${{ steps.create_release.outputs.id }}/assets?name=$(basename $file)"
           done
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
