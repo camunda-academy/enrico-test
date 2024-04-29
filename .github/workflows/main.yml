@@ -30,7 +30,7 @@ jobs:
           for file in ${ALL_CHANGED_FILES}; do
             echo "$file was changed"
           done
-  download-jar:
+  create-target:
     runs-on: ubuntu-latest
     outputs:
       jar-path: ${{ steps.setup-jar-path.outputs.jar-path }}
@@ -40,7 +40,7 @@ jobs:
         id: setup-jar-path
         run: echo "jar-path=academy-md-html-0.2.jar" >> $GITHUB_ENV
       
-      - name: Download Release Artifact from Repository B
+      - name: Download Release builder Artifact from Repository "academy-md-html"
         run: |
           curl -L -o ${{ env.jar-path }} \
           "https://github.com/camunda-academy/academy-md-html/releases/tag/v0.2/${{ env.jar-path }}" \
@@ -51,3 +51,29 @@ jobs:
         with:
           name: academy-md-html-jar
           path: ${{ env.jar-path }}
+      - name: Execute JAR file
+        run: java -jar {{ env.jar-path }} ./en
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.sha }}
+          release_name: Release ${{ github.sha }}
+          draft: false
+          prerelease: false
+        
+      - name: Find and Upload Each File
+        run: |
+          for file in target/*; do
+            echo "Uploading $file"
+            curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                 -H "Content-Type: $(file --mime-type -b $file)" \
+                 --data-binary @"$file" \
+                 "${{ steps.create_release.outputs.upload_url }}?name=$(basename $file)"
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
