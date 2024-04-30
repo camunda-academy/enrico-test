@@ -28,7 +28,7 @@ jobs:
              **.jpeg
       - name: Check for Markdown changes
         id: set_output
-        run: echo "::set-output name=files_changed::${{ steps.changed-markdown-files.outputs.any_changed == 'true' }}"
+        run: echo "files_changed=${{ steps.changed-markdown-files.outputs.any_changed == 'true' }}" >> $GITHUB_OUTPUT           
 
       - name: List all changed files markdown files and save to file
         if: steps.changed-markdown-files.outputs.any_changed == 'true'
