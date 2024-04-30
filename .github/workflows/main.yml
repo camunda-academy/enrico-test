@@ -179,9 +179,7 @@ jobs:
 
           # Load the Skilljar response from a file
           skilljarResponse=$(cat skilljarResponse.json)
-          releaseFileUrls=$(cat release-file-urls.json)
           echo "$skilljarResponse"
-          echo "$releaseFileUrls"
 
           # Process each name entry from release-file-urls.json
           jq -r '.[] | .name' release-file-urls.json | while read -r name; do
@@ -202,13 +200,51 @@ jobs:
               
               # Append the match to the JSON array
               jq --arg id "$match_id" --arg url "$url" --arg title "$match_title" \
-                '. += [{"id": $id, "url": $url, "title": $title}]' lessonsToChange.json > temp.json && mv temp.json lessonsToChange.json
+                '. += [{"lesson_id": $id, "url": $url, "title": $title, "course_id": $course_id}]' lessonsToChange.json > temp.json && mv temp.json lessonsToChange.json
             else
               echo "No match found for $modified_name"
             fi
           done
           echo "These are the matches..."
           cat lessonsToChange.json
+
+      - name: Process lessons and update data
+        run: |
+          # Load the JSON data from the lessons file
+          lessons=$(cat lessonsToChange.json)
+          
+          # Iterate over each lesson entry
+          echo "$lessons" | jq -c '.[]' | while read -r lesson; do
+            url=$(echo $lesson | jq -r .url)
+            title=$(echo $lesson | jq -r .title)
+            lessonId=$(echo $lesson | jq -r .lesson_id)
+            courseId=$(echo $lesson | jq -r .course_id)
+            
+            # Step 1: Create a web package
+            response=$(curl -s -X POST "https://api.skilljar.com/v1/web-packages" \
+              -H "Authorization: Bearer ${{ secrets.SKILLJAR_SECRET }}" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "content_url": "'"$url"'",
+                "web_package": {
+                  "title": "'"$title"'",
+                  "redirect_on_completion": true,
+                  "sync_on_completion": true
+                }
+              }')
+            
+            # Extract the content_web_package_id from the response
+            content_web_package_id=$(echo $response | jq -r .id)
+            echo "Created web package with ID: $content_web_package_id for Lesson ID: $lessonId"
+            
+            # Step 2: Update the lesson object
+            update_response=$(curl -s -X PUT "https://api.skilljar.com/v1/lessons/$lessonId?course_id=$courseId" \
+              -H "Authorization: Bearer ${{ secrets.SKILLJAR_SECRET }}" \
+              -H "Content-Type: application/x-www-form-urlencoded" \
+              -d "content_web_package_id=$content_web_package_id")
+            
+            echo "Updated lesson $lessonId with web package ID: $content_web_package_id"
+          done
 
 
     
