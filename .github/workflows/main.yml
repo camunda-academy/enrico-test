@@ -177,6 +177,9 @@ jobs:
           
           # Load the Skilljar response from a file
           skilljarResponse=$(cat skilljarResponse.json)
+          release-file-urls=$(cat release-file-urls.json)
+          echo skilljarResponse
+          echo release-file-urls
     
           # Process each name entry from release-file-urls.json
           jq -r '.[] | .name' release-file-urls.json | while read -r name; do
