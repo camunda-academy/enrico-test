@@ -221,6 +221,9 @@ jobs:
             title=$(echo $lesson | jq -r .title)
             lessonId=$(echo $lesson | jq -r .lesson_id)
             courseId=$(echo $lesson | jq -r .course_id)
+            echo "$title"
+            echo "$lessonId"
+            echo "$courseId"
             echo "$url"
 
           done
