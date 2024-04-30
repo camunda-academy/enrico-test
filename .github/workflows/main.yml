@@ -45,6 +45,8 @@ jobs:
   create-release:
     needs: changed_files
     runs-on: ubuntu-latest
+    outputs:
+      proceed: ${{ steps.filter_dirs.outputs.proceed }}
     if: needs.changed_files.outputs.files_changed == 'true'
     steps:
       - name: Checkout code
