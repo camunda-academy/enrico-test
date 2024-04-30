@@ -238,7 +238,17 @@ jobs:
                 "sync_on_completion": true
               }
             }')
-          echo "$response"
+          # Step 2: Extract the content_web_package_id from the response
+          content_web_package_id=$(echo $response | jq -r .id)
+          echo "Created web package with ID: $content_web_package_id for Lesson ID: $lessonId"
+            
+          # Step 3: Update the lesson object
+          update_response=$(curl -s -X PUT "https://api.skilljar.com/v1/lessons/$lessonId?course_id=$courseId" \
+            -H "Authorization: Bearer ${{ secrets.SKILLJAR_SECRET }}" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "content_web_package_id=$content_web_package_id")
+            
+          echo "Updated lesson $lessonId with web package ID: $content_web_package_id"
 
           done
 
