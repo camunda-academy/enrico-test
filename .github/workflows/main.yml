@@ -164,6 +164,12 @@ jobs:
                 "https://api.skilljar.com/v1/lessons?course_id=$courseId")
               echo "$response" > "skilljarResponse.json"
             done
+      - name: get file urls
+        uses: actions/download-artifact@v4
+        with:
+          name: release-file-urls
+          path: release-file-urls.json
+          
       - name: Match and Log IDs and URLs
         run: |
           # Download the release-file-urls.json artifact (assuming it's available in the workspace)
