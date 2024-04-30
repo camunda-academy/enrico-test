@@ -199,8 +199,8 @@ jobs:
               echo "Match found: ID $match_id with URL: $url, Title: $match_title"
               
               # Append the match to the JSON array
-              jq --arg id "$match_id" --arg url "$url" --arg title "$match_title" \
-                '. += [{"lesson_id": $id, "url": $url, "title": $title, "course_id": $course_id}]' lessonsToChange.json > temp.json && mv temp.json lessonsToChange.json
+              jq --arg id "$match_id" --arg url "$url" --arg title "$match_title" --arg course_id "$course_id" \
+              '. += [{"lesson_id": $id, "url": $url, "title": $title, "course_id": $course_id}]' lessonsToChange.json > temp.json && mv temp.json lessonsToChange.json
             else
               echo "No match found for $modified_name"
             fi
