@@ -226,12 +226,10 @@ jobs:
             echo "$courseId"
             echo "$url"
             # Step 1: Create a web package
-            response=$(curl -L -v -s -X POST "https://api.skilljar.com/v1/web-packages" \
-            -H "Authorization: Bearer ${{ secrets.SKILLJAR_SECRET }}" \
+            response=$(curl -s -X POST "https://api.skilljar.com/v1/web-packages" \
             -H "Content-Type: application/json" \
-            -H "Accept-Encoding: gzip, deflate, br" \
             -H "Accept: */*" \
-            -H "Connection: keep-alive" \
+            -u ${{ secrets.SKILLJAR_SECRET }}: \
             -d '{
               "content_url": "'"$url"'",
               "web_package": {
