@@ -84,10 +84,15 @@ jobs:
           name: changed-md-files
 
       - name: Extract relevant ZIP files to upload
+        id: check_dirs
         run: |
-          grep -oP 'en/lessons/\K[^/]+' changed-md-files.txt > relevant_dirs.txt
+          grep -oP 'en/lessons/\K[^/]*' changed-md-files.txt > relevant_dirs.txt
+          if [ ! -s relevant_dirs.txt ]; then
+            echo "No relevant directories found"
+            echo "::error ::No relevant directories to process."
+            exit 1
+          fi
           cat relevant_dirs.txt
-
         
       - name: Find, Upload Each Relevant File, and Save URLs
         run: |
