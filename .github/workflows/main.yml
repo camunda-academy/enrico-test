@@ -88,13 +88,16 @@ jobs:
         run: |
           grep -oP 'en/lessons/\K[^/]*' changed-md-files.txt > relevant_dirs.txt
           if [ ! -s relevant_dirs.txt ]; then
-            echo "No relevant directories found"
-            echo "::error ::No relevant directories to process."
-            exit 0
+            echo "No relevant directories found. Exiting job successfully."
+            echo "::set-output name=proceed::false"
+          else
+            echo "Relevant directories found. Proceeding with the job."
+            echo "::set-output name=proceed::true"
           fi
           cat relevant_dirs.txt
         
       - name: Find, Upload Each Relevant File, and Save URLs
+        if: steps.filter_dirs.outputs.proceed == 'true'
         run: |
           echo "" > release-file-urls.txt  # Initialize or clear the file that will store the URLs
           for dir in $(cat relevant_dirs.txt); do
@@ -114,6 +117,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload URL list as artifact
+        if: steps.filter_dirs.outputs.proceed == 'true'
         uses: actions/upload-artifact@v3
         with:
           name: release-file-urls
