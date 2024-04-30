@@ -180,11 +180,11 @@ jobs:
           # Load the Skilljar response from a file
           skilljarResponse=$(cat skilljarResponse.json)
           releaseFileUrls=$(cat release-file-urls.json)
-          echo skilljarResponse
-          echo releaseFileUrls
+          echo "$skilljarResponse"
+          echo "$releaseFileUrls"
     
           # Process each name entry from release-file-urls.json
-          jq -r '.[] | .name' releaseFileUrls | while read -r name; do
+          jq -r '.[] | .name' release-file-urls.json | while read -r name; do
             # Modify the name for comparison
             modified_name=$(echo "$name" | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
             echo "Processing name: $name, Modified name: $modified_name"
@@ -194,7 +194,7 @@ jobs:
             
             if [ ! -z "$match_id" ]; then
               # Retrieve the URL from release-file-urls.json
-              url=$(jq -r --arg name "$name" '.[] | select(.name == $name) | .url' releaseFileUrls)
+              url=$(jq -r --arg name "$name" '.[] | select(.name == $name) | .url' release-file-urls.json)
               echo "Match found: ID $match_id with URL: $url"
               
               # Append the match to the JSON array
