@@ -229,6 +229,9 @@ jobs:
             response=$(curl -L -v -s -X POST "https://api.skilljar.com/v1/web-packages" \
             -H "Authorization: Bearer ${{ secrets.SKILLJAR_SECRET }}" \
             -H "Content-Type: application/json" \
+            -H "Accept-Encoding: gzip, deflate, br" \
+            -H "Accept: */*" \
+            -H "Connection: keep-alive" \
             -d '{
               "content_url": "'"$url"'",
               "web_package": {
