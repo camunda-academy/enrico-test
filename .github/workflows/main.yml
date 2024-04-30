@@ -88,11 +88,13 @@ jobs:
         run: |
           if grep -oP 'en/lessons/\K[^/]*' changed-md-files.txt > relevant_dirs.txt; then
             echo "Relevant directories found. Proceeding with the job."
-            echo "::set-output name=proceed::true"
+            echo "proceed=true" >> $GITHUB_OUTPUT
           else
             echo "No relevant directories found. Exiting job successfully."
-            echo "::set-output name=proceed::false"
+            echo "proceed=false" >> $GITHUB_OUTPUT
           fi
+          cat relevant_dirs.txt || true  # Ensures the step doesn't fail if cat has nothing to display
+  
         
       - name: Find, Upload Each Relevant File, and Save URLs
         if: steps.filter_dirs.outputs.proceed == 'true'
