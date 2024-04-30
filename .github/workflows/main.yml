@@ -126,6 +126,14 @@ jobs:
           name: release-file-urls
           path: release-file-urls.json
 
+  debug_skilljar:
+    runs-on: ubuntu-latest
+    needs: [create-release]
+    steps:
+      - name: Log Proceed Value
+        run: |
+          echo "Proceed value from create-release: ${{ needs.create-release.outputs.proceed }}"
+
   check_and_fetch_skilljar:
     runs-on: ubuntu-latest
     needs: [create-release]
