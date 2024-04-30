@@ -169,12 +169,16 @@ jobs:
         with:
           name: release-file-urls
           path: release-file-urls.json
+          
+      - name: cat skilljarResponse
+        run: |
+          cat skilljarResponse.json
 
       - name: Match and Log IDs and URLs
         run: |
           # Load the JSON data into a variable for easier reuse
           skilljarResponse=$(cat skilljarResponse.json)
-          
+           
           # Iterate over each name entry from release-file-urls.json
           jq -r '.[] | .name' release-file-urls.json | while read -r name; do
             # Modify the name for comparison
