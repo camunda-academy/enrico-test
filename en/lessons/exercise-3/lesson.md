@@ -49,4 +49,4 @@ And here you are the format to pass when testing:
 - `{"creditScore":82,"borrowersIncome":1200,"expenses":800,"installmentRate":200}`
 - `{"creditScore":82,"borrowersIncome":1200,"expenses":800,"installmentRate":300}`
 
-a
+ab

@@ -99,17 +99,20 @@ jobs:
       - name: Find, Upload Each Relevant File, and Save URLs
         if: steps.filter_dirs.outputs.proceed == 'true'
         run: |
-          echo "" > release-file-urls.txt  # Initialize or clear the file that will store the URLs
+          # Initialize or clear the JSON file that will store the URLs
+          echo "[]" > release-file-urls.json
           for dir in $(cat relevant_dirs.txt); do
             for file in ./en/target/${dir}*.zip; do
               if [ -f "$file" ]; then
                 echo "Uploading $file"
                 response=$(curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-                     -H "Content-Type: $(file --mime-type -b $file)" \
-                     --data-binary @"$file" \
-                     "https://uploads.github.com/repos/camunda-academy/enrico-test/releases/${{ steps.create_release.outputs.id }}/assets?name=$(basename $file)")
+                      -H "Content-Type: $(file --mime-type -b $file)" \
+                      --data-binary @"$file" \
+                      "https://uploads.github.com/repos/camunda-academy/enrico-test/releases/${{ steps.create_release.outputs.id }}/assets?name=$(basename $file)")
                 url=$(echo $response | jq -r .browser_download_url)
-                echo $url >> release-file-urls.txt
+                
+                # Construct JSON object and append to the array
+                jq --arg dir "$dir" --arg url "$url" '. += [{"name": $dir, "url": $url}]' release-file-urls.json > temp.json && mv temp.json release-file-urls.json
               fi
             done
           done
@@ -121,7 +124,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: release-file-urls
-          path: release-file-urls.txt
+          path: release-file-urls.json
 
 
 
