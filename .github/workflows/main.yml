@@ -128,14 +128,6 @@ jobs:
           name: release-file-urls
           path: release-file-urls.json
 
-  debug_skilljar:
-    runs-on: ubuntu-latest
-    needs: [create-release]
-    steps:
-      - name: Log Proceed Value
-        run: |
-          echo "Proceed value from create-release: ${{ needs.create-release.outputs.proceed }}"
-
   check_and_fetch_skilljar:
     runs-on: ubuntu-latest
     needs: [create-release]
@@ -163,14 +155,27 @@ jobs:
             echo "$skilljarCourseIds" > skilljarCourseIds.txt
   
       - name: Fetch data from Skilljar for each courseId
+        ## Let's assume there can be several courseId, but at the moment there will be only one.
         run: |
             cat skilljarCourseIds.txt | tr ',' '\n' | while IFS= read -r courseId; do
               echo "Fetching data for courseId: $courseId"
               response=$(curl -s -X GET \
                 -u ${{ secrets.SKILLJAR_SECRET }}: \
                 "https://api.skilljar.com/v1/lessons?course_id=$courseId")
-              echo "Response for courseId $courseId: $response"
+              echo "$response" > "skilljarResponse.json"
             done
+      - name: Match and Log IDs and URLs
+        run: |
+          # Download the release-file-urls.json artifact (assuming it's available in the workspace)
+          jq -r '.[] | .name' release-file-urls.json | while read -r name; do
+            modified_name=$(echo "$name" | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
+            match_id=$(jq -r --arg modified_name "$modified_name" '.[] | select(.title | ascii_downcase | gsub(" "; "-") == $modified_name) | .id' skilljarResponse.json)
+            if [ ! -z "$match_id" ]; then
+              url=$(jq -r --arg name "$name" '.[] | select(.name == $name) | .url' release-file-urls.json)
+              echo "Match found: $match_id with URL: $url"
+            fi
+          done
+    
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
