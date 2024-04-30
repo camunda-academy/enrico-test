@@ -169,6 +169,8 @@ jobs:
         with:
           name: release-file-urls
           
+      - name: List contents of the artifact directory
+        run: ls -alh release-file-urls/
 
       - name: Match IDs and Save to JSON
         run: |
