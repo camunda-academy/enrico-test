@@ -175,7 +175,7 @@ jobs:
       - name: Match IDs and Save to JSON
         run: |
           # Initialize the JSON array
-          echo "[]" > matches.json
+          echo "[]" > lessonsToChange.json
 
           # Load the Skilljar response from a file
           skilljarResponse=$(cat skilljarResponse.json)
@@ -189,22 +189,27 @@ jobs:
             modified_name=$(echo "$name" | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
             echo "Processing name: $name, Modified name: $modified_name"
             
-            # Perform the comparison and extract the ID
-            match_id=$(echo "$skilljarResponse" | jq -r --arg modified_name "$modified_name" '.results[] | select(.title | ascii_downcase | gsub(" "; "-") == $modified_name) | .id')
-            
-            if [ ! -z "$match_id" ]; then
+            # Perform the comparison and extract the ID and title
+            match=$(echo "$skilljarResponse" | jq -r --arg modified_name "$modified_name" \
+              '.results[] | select(.title | ascii_downcase | gsub(" "; "-") == $modified_name) | {id: .id, title: .title}')
+
+            if [ ! -z "$(echo $match | jq -r .id)" ]; then
+              match_id=$(echo $match | jq -r .id)
+              match_title=$(echo $match | jq -r .title)
               # Retrieve the URL from release-file-urls.json
               url=$(jq -r --arg name "$name" '.[] | select(.name == $name) | .url' release-file-urls.json)
-              echo "Match found: ID $match_id with URL: $url"
+              echo "Match found: ID $match_id with URL: $url, Title: $match_title"
               
               # Append the match to the JSON array
-              jq --arg id "$match_id" --arg url "$url" '. += [{"id": $id, "url": $url}]' matches.json > temp.json && mv temp.json matches.json
+              jq --arg id "$match_id" --arg url "$url" --arg title "$match_title" \
+                '. += [{"id": $id, "url": $url, "title": $title}]' lessonsToChange.json > temp.json && mv temp.json lessonsToChange.json
             else
               echo "No match found for $modified_name"
             fi
           done
           echo "These are the matches..."
-          cat matches.json
+          cat lessonsToChange.json
+
 
     
         env:
