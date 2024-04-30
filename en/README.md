@@ -1,2 +1,2 @@
 # camunda-dmn-ilt_en
-Camunda DMN (Instructor Led) - Englishh
+Camunda DMN (Instructor Led) - Englishhh
