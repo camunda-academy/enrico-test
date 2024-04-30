@@ -194,12 +194,13 @@ jobs:
             if [ ! -z "$(echo $match | jq -r .id)" ]; then
               match_id=$(echo $match | jq -r .id)
               match_title=$(echo $match | jq -r .title)
+              match_course_id=$(echo $match | jq -r .course_id)
               # Retrieve the URL from release-file-urls.json
               url=$(jq -r --arg name "$name" '.[] | select(.name == $name) | .url' release-file-urls.json)
-              echo "Match found: ID $match_id with URL: $url, Title: $match_title"
+              echo "Match found: ID $match_id with URL: $url, Title: $match_title, Course id: $match_course_id"
               
               # Append the match to the JSON array
-              jq --arg id "$match_id" --arg url "$url" --arg title "$match_title" --arg course_id "$course_id" \
+              jq --arg id "$match_id" --arg url "$url" --arg title "$match_title" --arg course_id "$match_course_id" \
               '. += [{"lesson_id": $id, "url": $url, "title": $title, "course_id": $course_id}]' lessonsToChange.json > temp.json && mv temp.json lessonsToChange.json
             else
               echo "No match found for $modified_name"
