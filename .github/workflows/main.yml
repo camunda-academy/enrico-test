@@ -89,20 +89,31 @@ jobs:
           cat relevant_dirs.txt
 
         
-      - name: Find and Upload Each Relevant File
+      - name: Find, Upload Each Relevant File, and Save URLs
         run: |
+          echo "" > release-file-urls.txt  # Initialize or clear the file that will store the URLs
           for dir in $(cat relevant_dirs.txt); do
             for file in ./en/target/${dir}*.zip; do
               if [ -f "$file" ]; then
                 echo "Uploading $file"
-                curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                response=$(curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
                      -H "Content-Type: $(file --mime-type -b $file)" \
                      --data-binary @"$file" \
-                     "https://uploads.github.com/repos/camunda-academy/enrico-test/releases/${{ steps.create_release.outputs.id }}/assets?name=$(basename $file)"
+                     "https://uploads.github.com/repos/camunda-academy/enrico-test/releases/${{ steps.create_release.outputs.id }}/assets?name=$(basename $file)")
+                url=$(echo $response | jq -r .browser_download_url)
+                echo $url >> release-file-urls.txt
               fi
             done
           done
-
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload URL list as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: release-file-urls
+          path: release-file-urls.txt
+
+
+
 
