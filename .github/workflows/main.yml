@@ -189,7 +189,7 @@ jobs:
             
             # Perform the comparison and extract the ID and title
             match=$(echo "$skilljarResponse" | jq -r --arg modified_name "$modified_name" \
-              '.results[] | select(.title | ascii_downcase | gsub(" "; "-") == $modified_name) | {id: .id, title: .title}')
+              '.results[] | select(.title | ascii_downcase | gsub(" "; "-") == $modified_name) | {id: .id, title: .title, course_id: .course_id}')
 
             if [ ! -z "$(echo $match | jq -r .id)" ]; then
               match_id=$(echo $match | jq -r .id)
