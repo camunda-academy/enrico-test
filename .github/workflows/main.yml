@@ -213,6 +213,7 @@ jobs:
         run: |
           # Load the JSON data from the lessons file
           lessons=$(cat lessonsToChange.json)
+          echo "$lessons"
           
           # Iterate over each lesson entry
           echo "$lessons" | jq -c '.[]' | while read -r lesson; do
@@ -220,31 +221,8 @@ jobs:
             title=$(echo $lesson | jq -r .title)
             lessonId=$(echo $lesson | jq -r .lesson_id)
             courseId=$(echo $lesson | jq -r .course_id)
-            
-            # Step 1: Create a web package
-            response=$(curl -s -X POST "https://api.skilljar.com/v1/web-packages" \
-              -H "Authorization: Bearer ${{ secrets.SKILLJAR_SECRET }}" \
-              -H "Content-Type: application/json" \
-              -d '{
-                "content_url": "'"$url"'",
-                "web_package": {
-                  "title": "'"$title"'",
-                  "redirect_on_completion": true,
-                  "sync_on_completion": true
-                }
-              }')
-            
-            # Extract the content_web_package_id from the response
-            content_web_package_id=$(echo $response | jq -r .id)
-            echo "Created web package with ID: $content_web_package_id for Lesson ID: $lessonId"
-            
-            # Step 2: Update the lesson object
-            update_response=$(curl -s -X PUT "https://api.skilljar.com/v1/lessons/$lessonId?course_id=$courseId" \
-              -H "Authorization: Bearer ${{ secrets.SKILLJAR_SECRET }}" \
-              -H "Content-Type: application/x-www-form-urlencoded" \
-              -d "content_web_package_id=$content_web_package_id")
-            
-            echo "Updated lesson $lessonId with web package ID: $content_web_package_id"
+            echo "$url"
+
           done
 
 
