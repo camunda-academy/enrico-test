@@ -170,7 +170,7 @@ jobs:
           name: release-file-urls
           
       - name: List contents of the artifact directory
-        run: ls -alh
+        run: cat release-file-urls.json
 
       - name: Match IDs and Save to JSON
         run: |
@@ -179,7 +179,7 @@ jobs:
           
           # Load the Skilljar response from a file
           skilljarResponse=$(cat skilljarResponse.json)
-          release-file-urls=$(cat release-file-urls/release-file-urls.json)
+          release-file-urls=$(cat release-file-urls.json)
           echo skilljarResponse
           echo release-file-urls
     
