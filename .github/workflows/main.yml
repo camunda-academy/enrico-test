@@ -151,13 +151,6 @@ jobs:
             echo "course.properties file does not exist."
             exit 1
           fi
-      
-          - name: Check for course.properties file
-          run: |
-            if [ ! -f "en/course.properties" ]; then
-              echo "course.properties file does not exist."
-              exit 1
-            fi
   
       - name: Read skilljarCourseIds
         run: |
