@@ -198,6 +198,8 @@ jobs:
               echo "No match found for $modified_name"
             fi
           done
+          echo "These are the matches..."
+          cat matches.json
 
     
         env:
