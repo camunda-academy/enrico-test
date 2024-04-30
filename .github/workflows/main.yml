@@ -126,6 +126,49 @@ jobs:
           name: release-file-urls
           path: release-file-urls.json
 
+  check_and_fetch_skilljar:
+    runs-on: ubuntu-latest
+    needs: [create-release]
+    if: ${{ needs.create-release.outputs.proceed == 'true' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
+      - name: Check for course.properties file
+        id: check_file
+        run: |
+          if [ ! -f "en/course.properties" ]; then
+            echo "course.properties file does not exist."
+            exit 1
+          fi
+      
+          - name: Check for course.properties file
+          run: |
+            if [ ! -f "en/course.properties" ]; then
+              echo "course.properties file does not exist."
+              exit 1
+            fi
+  
+      - name: Read skilljarCourseIds
+        run: |
+            skilljarCourseIds=$(grep 'skilljarCourseId' en/course.properties | cut -d'=' -f2 | tr -d ' ')
+            if [ -z "$skilljarCourseIds" ]; then
+              echo "skilljarCourseIds not found in properties file."
+              exit 1
+            fi
+            echo "skilljarCourseIds=$skilljarCourseIds" >> $GITHUB_ENV
+            echo "$skilljarCourseIds" > skilljarCourseIds.txt
+  
+      - name: Fetch data from Skilljar for each courseId
+        run: |
+            cat skilljarCourseIds.txt | tr ',' '\n' | while IFS= read -r courseId; do
+              echo "Fetching data for courseId: $courseId"
+              response=$(curl -s -X GET \
+                -u ${{ secrets.SKILLJAR_SECRET }}: \
+                "https://api.skilljar.com/v1/lessons?course_id=$courseId")
+              echo "Response for courseId $courseId: $response"
+            done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
