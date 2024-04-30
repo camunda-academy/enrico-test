@@ -37,7 +37,7 @@ jobs:
           cat changed-md-files.txt
 
       - name: Upload changed markdown files as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: changed-md-files
           path: changed-md-files.txt
@@ -121,7 +121,7 @@ jobs:
 
       - name: Upload URL list as artifact
         if: steps.filter_dirs.outputs.proceed == 'true'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: release-file-urls
           path: release-file-urls.json
