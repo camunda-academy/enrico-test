@@ -45,4 +45,4 @@ Repeat the steps explained in the Demo in order to start a new process instance 
 - For all applications with a Credit Score < 80 the loan will be rejected
 - For a Credit Score >= 95.0 and “Marginal” the loan will be accepted
 
-abcdefgljkl
+abcdefgljklh
