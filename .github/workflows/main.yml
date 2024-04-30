@@ -169,18 +169,39 @@ jobs:
         with:
           name: release-file-urls
           path: release-file-urls.json
-          
+
       - name: Match and Log IDs and URLs
         run: |
-          # Download the release-file-urls.json artifact (assuming it's available in the workspace)
+          # Load the JSON data into a variable for easier reuse
+          skilljarResponse=$(cat skilljarResponse.json)
+          
+          # Iterate over each name entry from release-file-urls.json
           jq -r '.[] | .name' release-file-urls.json | while read -r name; do
+            # Modify the name for comparison
             modified_name=$(echo "$name" | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
-            match_id=$(jq -r --arg modified_name "$modified_name" '.[] | select(.title | ascii_downcase | gsub(" "; "-") == $modified_name) | .id' skilljarResponse.json)
+            echo "Processing name: $name"
+            echo "Modified name for comparison: $modified_name"
+            
+            # Perform the comparison using jq and save the output to a variable
+            comparison_result=$(echo "$skilljarResponse" | jq -r --arg modified_name "$modified_name" \
+              '.[] | select(.title | ascii_downcase | gsub(" "; "-") == $modified_name)')
+            
+            # Echo the comparison result for debugging
+            echo "Comparison result for $modified_name: $comparison_result"
+
+            # Extract the ID from the comparison result
+            match_id=$(echo "$comparison_result" | jq -r '.id')
+
+            # Check if a match was found
             if [ ! -z "$match_id" ]; then
+              # Retrieve the URL from release-file-urls.json
               url=$(jq -r --arg name "$name" '.[] | select(.name == $name) | .url' release-file-urls.json)
-              echo "Match found: $match_id with URL: $url"
+              echo "Match found: ID $match_id with URL: $url"
+            else
+              echo "No match found for $modified_name"
             fi
           done
+
     
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
