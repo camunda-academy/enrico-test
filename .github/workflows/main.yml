@@ -197,15 +197,19 @@ jobs:
   match_and_update_skilljar:
     runs-on: ubuntu-latest
     needs: [get_skilljar_course_id]
-    strategy:
-      fail-fast: false
-      matrix:
-        skilljar_course_id: ${{ fromJson(needs.get_skilljar_course_id.outputs.skilljar_course_ids) }}
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        skilljar_course_id: ${{ fromJson(needs.get_skilljar_course_id.outputs.skilljar_course_ids) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Print skilljar course IDs output
+        run: |
+          echo "Skilljar course IDs: ${{ needs.get_skilljar_course_id.outputs.skilljar_course_ids }}"
 
       - name: Fetch data from Skilljar for each courseId in the matrix
+        if: true == false
         run: |
           echo "Fetching data for courseId: ${{ matrix.skilljar_course_id }}"
           response=$(curl -s -X GET \
