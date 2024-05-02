@@ -1,0 +1,27 @@
+on:
+    push:
+      branches:
+        - main  # or any other branch you want to monitor
+
+jobs:
+    delete-all-releases:
+        runs-on: ubuntu-latest
+        if: contains(github.event.head_commit.message, 'delete all releases')
+        steps:
+            - name: Delete all releases
+              run: |
+                # Set the GitHub API endpoint for releases in the repository.
+                API_ENDPOINT="https://api.github.com/repos/${{ github.repository }}/releases"
+                
+                # Get a list of all release IDs.
+                release_ids=$(curl -s -H "Authorization: token $GITHUB_TOKEN" $API_ENDPOINT | jq -r '.[].id')
+                
+                # Loop through the list and delete each release.
+                for id in $release_ids; do
+                echo "Deleting release with ID: $id"
+                curl -s -X DELETE -H "Authorization: token $GITHUB_TOKEN" "$API_ENDPOINT/$id"
+                done
+                
+                echo "All releases have been deleted."
+              env:
+                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
