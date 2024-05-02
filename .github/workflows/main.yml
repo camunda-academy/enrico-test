@@ -120,6 +120,7 @@ jobs:
           prerelease: false
           
       - name: Download new relevant directories artifact
+        id: download-new-relevant-directories
         uses: actions/download-artifact@v4
         with:
           name: new-relevant-dirs
@@ -127,11 +128,17 @@ jobs:
         continue-on-error: true
   
       - name: Download updated relevant directories artifact
+        id: download-updated-relevant-directories
         uses: actions/download-artifact@v4
         with:
           name: updated-relevant-dirs
         # If the artifact does not exist, this step will not fail the job.
         continue-on-error: true
+
+      - name: Print message if artifact not found
+        if: ${{ failure() && (steps.download-new-relevant-directories.outcome == 'failure' || steps.download-updated-relevant-directories.outcome == 'failure') }}
+        run: |
+          echo "One or more artifacts not found but this may be ok, let's go on!"
 
       - name: Find, Upload Each Relevant File, and Save URLs
         run: |
