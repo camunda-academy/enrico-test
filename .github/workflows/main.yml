@@ -123,13 +123,15 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: new-relevant-dirs
-          # If the artifact does not exist, this step will not fail the job.
+        # If the artifact does not exist, this step will not fail the job.
+        continue-on-error: true
   
       - name: Download updated relevant directories artifact
         uses: actions/download-artifact@v4
         with:
           name: updated-relevant-dirs
-          # If the artifact does not exist, this step will not fail the job.
+        # If the artifact does not exist, this step will not fail the job.
+        continue-on-error: true
 
       - name: Find, Upload Each Relevant File, and Save URLs
         run: |
