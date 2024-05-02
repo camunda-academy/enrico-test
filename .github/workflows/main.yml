@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Test changed-files
     outputs:
-      files_changed: ${{ steps.set_output.outputs.files_changed }} 
+      files_changed: ${{ steps.set_created_or_updated_file.outputs.files_changed }} 
     steps:
       - uses: actions/checkout@v4
 
@@ -61,7 +61,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       proceed: ${{ steps.filter_dirs.outputs.proceed }}
-    if: needs.changed_files.outputs.created_or_updated_files == 'true'
+    if: needs.changed_files.outputs.files_changed == 'true'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
