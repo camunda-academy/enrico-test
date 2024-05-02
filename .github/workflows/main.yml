@@ -1,4 +1,4 @@
-name: Print Updated Resources
+name: Create zip files of updated lessons and deploy to skilljar
 
 on:
   push:
@@ -198,6 +198,7 @@ jobs:
           skilljarCourseIds=${skilljarCourseIds%,}
           echo "skilljar_course_ids=$skilljarCourseIds" >> $GITHUB_ENV
           echo "skilljar_course_ids=$skilljarCourseIds" >> $GITHUB_OUTPUT
+          echo $skilljarCourseIds
 
   match_and_update_skilljar:
     runs-on: ubuntu-latest
