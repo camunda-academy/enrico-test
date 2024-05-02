@@ -191,11 +191,9 @@ jobs:
           skilljarCourseIds=$(grep 'skilljarCourseId' en/course.properties | sed 's/skilljarCourseId[:=][[:space:]]*//; s/,[[:space:]]*$//')
           # Use jq to split the string into an array, trimming whitespace around each ID
           skilljarCourseIdsJson=$(echo $skilljarCourseIds | jq -R 'split(",") | map(. | gsub("^\\s+|\\s+$";""))')
-          # Set the job output with the new echo command syntax
-          echo "extract_skilljar_course_ids<<EOF" >> $GITHUB_ENV
-          echo "$skilljarCourseIdsJson" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-          # Log the JSON array for verification
+          # Set the output
+          echo "skilljar_course_ids=${skilljarCourseIdsJson}" 
+          echo "extract_skilljar_course_ids=${skilljarCourseIdsJson}" >> $GITHUB_OUTPUT
           echo "Skilljar Course IDs JSON Array: $skilljarCourseIdsJson"
 
   match_and_update_skilljar:
