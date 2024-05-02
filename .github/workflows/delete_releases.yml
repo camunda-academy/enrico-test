@@ -1,7 +1,7 @@
 on:
     push:
       branches:
-        - master  # or any other branch you want to monitor
+        - master  # or any other branch you want to monitors
 
 jobs:
     delete-all-releases:
