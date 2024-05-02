@@ -221,15 +221,16 @@ jobs:
             title=$(echo $lesson | jq -r .title)
             lessonId=$(echo $lesson | jq -r .lesson_id)
             courseId=$(echo $lesson | jq -r .course_id)
-            echo "$title"
-            echo "$lessonId"
-            echo "$courseId"
-            echo "$url"
+            echo "Analyising:"
+            echo "Title: $title"
+            echo "Lesson id: $lessonId"
+            echo "Course id: $courseId"
+            echo "Url: $url"
             # Step 1: Create a web package
             response=$(curl -s -X POST "https://api.skilljar.com/v1/web-packages" \
+            -u ${{ secrets.SKILLJAR_SECRET }}: \
             -H "Content-Type: application/json" \
             -H "Accept: */*" \
-            -u ${{ secrets.SKILLJAR_SECRET }}: \
             -d '{
               "content_url": "'"$url"'",
               "web_package": {
@@ -244,7 +245,7 @@ jobs:
             
           # Step 3: Update the lesson object
           update_response=$(curl -s -X PUT "https://api.skilljar.com/v1/lessons/$lessonId?course_id=$courseId" \
-            -H "Authorization: Bearer ${{ secrets.SKILLJAR_SECRET }}" \
+            -u ${{ secrets.SKILLJAR_SECRET }}: \
             -H "Content-Type: application/x-www-form-urlencoded" \
             -d "content_web_package_id=$content_web_package_id")
             
