@@ -26,28 +26,42 @@ jobs:
              **.png
              **.jpg
              **.jpeg
-      - name: Check for Markdown changes
-        id: set_output
-        run: echo "files_changed=${{ steps.changed-markdown-files.outputs.any_changed == 'true' }}" >> $GITHUB_OUTPUT           
+      - name: Check if at least one file is updated or created
+        id: set_created_or_updated_file
+        run: echo "files_changed=${{ steps.changed-markdown-files.outputs.created_or_updated_file == 'true' }}" >> $GITHUB_OUTPUT           
 
-      - name: List all changed files markdown files and save to file
-        if: steps.changed-markdown-files.outputs.any_changed == 'true'
+      - name: Save new Markdown or image files to file
+        if: steps.changed-markdown-files.outputs.added_files != ''
         run: |
-          echo "${{ steps.changed-markdown-files.outputs.all_changed_files }}" > changed-md-files.txt
-          cat changed-md-files.txt
+          echo "${{ steps.changed-markdown-files.outputs.added_files }}" > new-files.txt
+          cat new-files.txt
 
-      - name: Upload changed markdown files as artifact
+      - name: Upload new files list as artifact
         uses: actions/upload-artifact@v4
+        if: steps.changed-markdown-files.outputs.added_files != ''
         with:
-          name: changed-md-files
-          path: changed-md-files.txt
+          name: new-md-image-files
+          path: new-files.txt
+  
+      - name: Save updated Markdown or image files to file
+        if: steps.changed-markdown-files.outputs.modified_files != ''
+        run: |
+          echo "${{ steps.changed-markdown-files.outputs.modified_files }}" > updated-files.txt
+          cat updated-files.txt
+
+      - name: Upload updated files list as artifact
+        uses: actions/upload-artifact@v4
+        if: steps.changed-markdown-files.outputs.modified_files != ''
+        with:
+          name: updated-md-image-files
+          path: updated-files.txt
           
   create-release:
     needs: changed_files
     runs-on: ubuntu-latest
     outputs:
       proceed: ${{ steps.filter_dirs.outputs.proceed }}
-    if: needs.changed_files.outputs.files_changed == 'true'
+    if: needs.changed_files.outputs.created_or_updated_file == 'true'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -62,9 +76,6 @@ jobs:
         run: |
           curl -fSL -o ${{ env.jar-path }} \
           "https://github.com/ecuriotto/converter-example/releases/download/0.2/${{ env.jar-path }}"
-        
-      - name: List files in the directory (debug)
-        run: ls -lah
         
       - name: Execute JAR file
         run: java -jar ${{ env.jar-path }} ./en
@@ -83,12 +94,12 @@ jobs:
       - name: Download changed markdown files artifact
         uses: actions/download-artifact@v4
         with:
-          name: changed-md-files
+          name: updated-md-image-files
 
       - name: Extract relevant ZIP files to upload
         id: filter_dirs
         run: |
-          if grep -oP 'en/lessons/\K[^/]*' changed-md-files.txt > relevant_dirs.txt; then
+          if grep -oP 'en/lessons/\K[^/]*' updated-files.txt > relevant_dirs.txt; then
             echo "Relevant directories found. Proceeding with the job."
             echo "proceed=true" >> $GITHUB_OUTPUT
           else
