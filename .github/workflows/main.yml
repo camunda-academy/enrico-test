@@ -175,133 +175,48 @@ jobs:
           path: release-file-urls.json
 
     
-  upload_to_skilljar:
+  get_skilljar_course_id:
     runs-on: ubuntu-latest
-    needs: [create-release]
+    outputs:
+      skilljar_course_ids: ${{ steps.set_skilljar_course_ids.outputs.skilljar_course_ids }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Retrieve the course.properties where the skilljarcourse id is located  
-      - name: Check for course.properties file
-        id: check_file
+      - name: Read skilljarCourseIds and set as output
+        id: set_skilljar_course_ids
         run: |
-          if [ ! -f "en/course.properties" ]; then
-            echo "course.properties file does not exist."
+          skilljarCourseIds=$(grep 'skilljarCourseId' en/course.properties | cut -d':' -f2 | tr -d ' ')
+          if [ -z "$skilljarCourseIds" ]; then
+            echo "skilljarCourseIds not found in properties file."
             exit 1
           fi
-  
-      - name: Read skilljarCourseIds
+          # Replace all delimiters with a single type for easy parsing
+          skilljarCourseIds=$(echo $skilljarCourseIds | tr ',;-|+' '\n' | tr '\n' ',')
+          # Remove trailing comma if present
+          skilljarCourseIds=${skilljarCourseIds%,}
+          echo "skilljar_course_ids=$skilljarCourseIds" >> $GITHUB_ENV
+          echo "skilljar_course_ids=$skilljarCourseIds" >> $GITHUB_OUTPUT
+
+  match_and_update_skilljar:
+    runs-on: ubuntu-latest
+    needs: [get_skilljar_course_id, create-release]
+    strategy:
+      fail-fast: false
+      matrix:
+        skilljar_course_id: ${{ fromJson(needs.get_skilljar_course_id.outputs.skilljar_course_ids) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Fetch data from Skilljar for each courseId in the matrix
         run: |
-            skilljarCourseIds=$(grep 'skilljarCourseId' en/course.properties | cut -d'=' -f2 | tr -d ' ')
-            if [ -z "$skilljarCourseIds" ]; then
-              echo "skilljarCourseIds not found in properties file."
-              exit 1
-            fi
-            echo "skilljarCourseIds=$skilljarCourseIds" >> $GITHUB_ENV
-            echo "$skilljarCourseIds" > skilljarCourseIds.txt
-  
-      - name: Fetch data from Skilljar for each courseId
-        ## Let's assume there can be several courseId, but at the moment there will be only one.
-        run: |
-            cat skilljarCourseIds.txt | tr ',' '\n' | while IFS= read -r courseId; do
-              echo "Fetching data for courseId: $courseId"
-              response=$(curl -s -X GET \
-                -u ${{ secrets.SKILLJAR_SECRET }}: \
-                "https://api.skilljar.com/v1/lessons?course_id=$courseId")
-              echo "$response" > "skilljarResponse.json"
-            done
-      - name: get file urls
-        uses: actions/download-artifact@v4
-        with:
-          name: release-file-urls
-          
-      - name: List contents of the artifact directory
-        run: cat release-file-urls.json
-
-      - name: Match IDs and Save to JSON
-        run: |
-          # Initialize the JSON array
-          echo "[]" > lessonsToChange.json
-
-          # Load the Skilljar response from a file
-          skilljarResponse=$(cat skilljarResponse.json)
-          echo "$skilljarResponse"
-
-          # Process each name entry from release-file-urls.json
-          jq -r '.[] | .name' release-file-urls.json | while read -r name; do
-            # Modify the name for comparison
-            modified_name=$(echo "$name" | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
-            echo "Processing name: $name, Modified name: $modified_name"
-            
-            # Perform the comparison and extract the ID and title
-            match=$(echo "$skilljarResponse" | jq -r --arg modified_name "$modified_name" \
-              '.results[] | select(.title | ascii_downcase | gsub(" "; "-") == $modified_name) | {id: .id, title: .title, course_id: .course_id}')
-
-            if [ ! -z "$(echo $match | jq -r .id)" ]; then
-              match_id=$(echo $match | jq -r .id)
-              match_title=$(echo $match | jq -r .title)
-              match_course_id=$(echo $match | jq -r .course_id)
-              # Retrieve the URL from release-file-urls.json
-              url=$(jq -r --arg name "$name" '.[] | select(.name == $name) | .url' release-file-urls.json)
-              echo "Match found: ID $match_id with URL: $url, Title: $match_title, Course id: $match_course_id"
-              
-              # Append the match to the JSON array
-              jq --arg id "$match_id" --arg url "$url" --arg title "$match_title" --arg course_id "$match_course_id" \
-              '. += [{"lesson_id": $id, "url": $url, "title": $title, "course_id": $course_id}]' lessonsToChange.json > temp.json && mv temp.json lessonsToChange.json
-            else
-              echo "No match found for $modified_name"
-            fi
-          done
-          echo "These are the matches..."
-          cat lessonsToChange.json
-
-      - name: Process lessons and update data
-        run: |
-          # Load the JSON data from the lessons file
-          lessons=$(cat lessonsToChange.json)
-          echo "$lessons"
-          
-          # Iterate over each lesson entry
-          echo "$lessons" | jq -c '.[]' | while read -r lesson; do
-            url=$(echo $lesson | jq -r .url)
-            title=$(echo $lesson | jq -r .title)
-            lessonId=$(echo $lesson | jq -r .lesson_id)
-            courseId=$(echo $lesson | jq -r .course_id)
-            echo "Analyising:"
-            echo "Title: $title"
-            echo "Lesson id: $lessonId"
-            echo "Course id: $courseId"
-            echo "Url: $url"
-            # Step 1: Create a web package
-            response=$(curl -s -X POST "https://api.skilljar.com/v1/web-packages" \
+          echo "Fetching data for courseId: ${{ matrix.skilljar_course_id }}"
+          response=$(curl -s -X GET \
             -u ${{ secrets.SKILLJAR_SECRET }}: \
-            -H "Content-Type: application/json" \
-            -H "Accept: */*" \
-            -d '{
-              "content_url": "'"$url"'",
-              "web_package": {
-                "title": "'"$title"'",
-                "redirect_on_completion": true,
-                "sync_on_completion": true
-              }
-            }')
-          # Step 2: Extract the content_web_package_id from the response
-          content_web_package_id=$(echo $response | jq -r .id)
-          echo "Created web package with ID: $content_web_package_id for Lesson ID: $lessonId"
-            
-          # Step 3: Update the lesson object
-          update_response=$(curl -s -X PUT "https://api.skilljar.com/v1/lessons/$lessonId?course_id=$courseId" \
-            -u ${{ secrets.SKILLJAR_SECRET }}: \
-            -H "Content-Type: application/x-www-form-urlencoded" \
-            -d "content_web_package_id=$content_web_package_id")
-            
-          echo "Updated lesson $lessonId with web package ID: $content_web_package_id"
-
-          done
-    
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            "https://api.skilljar.com/v1/lessons?course_id=${{ matrix.skilljar_course_id }}")
+          echo "$response" > "skilljarResponse-${{ matrix.skilljar_course_id }}.json"
+          echo "Skilljar API Response for $courseId:"
+          echo "$response"
         
-
-
+        
