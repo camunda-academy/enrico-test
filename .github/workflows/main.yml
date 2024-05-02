@@ -28,7 +28,7 @@ jobs:
              **.jpeg
       - name: Check if at least one file is updated or created
         id: set_created_or_updated_file
-        run: echo "files_changed=${{ steps.changed-markdown-files.outputs.created_or_updated_file == 'true' }}" >> $GITHUB_OUTPUT           
+        run: echo "created_or_updated_files=${{ steps.changed-markdown-files.outputs.any_changed == 'true' }}" >> $GITHUB_OUTPUT           
 
       - name: Save new Markdown or image files to file
         if: steps.changed-markdown-files.outputs.added_files != ''
@@ -61,7 +61,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       proceed: ${{ steps.filter_dirs.outputs.proceed }}
-    if: needs.changed_files.outputs.created_or_updated_file == 'true'
+    if: needs.changed_files.outputs.created_or_updated_files == 'true'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
