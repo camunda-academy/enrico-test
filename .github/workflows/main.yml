@@ -61,7 +61,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       proceed: ${{ steps.filter_dirs.outputs.proceed }}
-    if: needs.changed_files.outputs.files_changed == 'true'
+    if: needs.changed_files.outputs.files_changed.created_or_updated_files == 'true'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
