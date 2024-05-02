@@ -192,15 +192,17 @@ jobs:
           # Format as JSON array
           skilljarCourseIdsJson=$(echo $skilljarCourseIds | jq -R 'split(",") | map(. | gsub("^\\s+|\\s+$";"")) | @json')
           # Output the JSON array to the workflow
-          echo "skilljar_course_ids=$skilljarCourseIdsJson" >> $GITHUB_OUTPUT
+          echo "skilljar_course_ids<<EOF" >> $GITHUB_OUTPUT
+          echo $skilljarCourseIdsJson >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
   match_and_update_skilljar:
     runs-on: ubuntu-latest
     needs: [get_skilljar_course_id]
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        skilljar_course_id: ${{ fromJson(needs.get_skilljar_course_id.outputs.skilljar_course_ids) }}
+    strategy:
+      fail-fast: false
+      matrix:
+        skilljar_course_id: ${{ fromJson(needs.get_skilljar_course_id.outputs.skilljar_course_ids) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
