@@ -251,8 +251,6 @@ jobs:
           echo "Updated lesson $lessonId with web package ID: $content_web_package_id"
 
           done
-
-
     
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
