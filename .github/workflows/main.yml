@@ -179,22 +179,22 @@ jobs:
     runs-on: ubuntu-latest
     needs: [create-release]
     outputs:
-      skilljar_course_ids: ${{ steps.set_skilljar_course_ids.outputs.skilljar_course_ids }}
+      skilljar_course_ids: ${{ steps.extract_skilljar_course_ids.outputs.skilljar_course_ids }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Read skilljarCourseIds and set as output
-        id: set_skilljar_course_ids
+      - name: Extract skilljarCourseIds and set as output
+        id: extract_skilljar_course_ids
         run: |
-          # Extract the line with skilljarCourseId and remove the label and any surrounding whitespace
-          skilljarCourseIds=$(grep 'skilljarCourseId' en/course.properties | sed 's/skilljarCourseId[:=][[:space:]]*//; s/,[[:space:]]*$//')
-          # Use jq to split the string into an array, trimming whitespace around each ID
-          skilljarCourseIdsJson=$(echo $skilljarCourseIds | jq -R 'split(",") | map(. | gsub("^\\s+|\\s+$";""))')
+          skilljarCourseIdLine=$(grep 'skilljarCourseId' en/course.properties)
+          # Extract the IDs, remove the property name, surrounding whitespace, and any trailing comma
+          skilljarCourseIds=$(echo $skilljarCourseIdLine | sed 's/skilljarCourseId[:=][[:space:]]*//; s/,[[:space:]]*$//')
+          # Format as JSON array
+          skilljarCourseIdsJson=$(echo $skilljarCourseIds | jq -R 'split(",") | map(. | gsub("^\\s+|\\s+$";"")) | @json')
           # Set the output
-          echo "skilljar_course_ids=${skilljarCourseIdsJson}" 
-          echo "extract_skilljar_course_ids=${skilljarCourseIdsJson}" >> $GITHUB_OUTPUT
-          echo "Skilljar Course IDs JSON Array: $skilljarCourseIdsJson"
+          echo "skilljar_course_ids=$skilljarCourseIdsJson" >> $GITHUB_ENV
+          echo "extract_skilljar_course_ids::$skilljarCourseIdsJson" >> $GITHUB_OUTPUT
 
   match_and_update_skilljar:
     runs-on: ubuntu-latest
