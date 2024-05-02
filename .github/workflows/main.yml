@@ -187,18 +187,16 @@ jobs:
       - name: Read skilljarCourseIds and set as output
         id: set_skilljar_course_ids
         run: |
-          skilljarCourseIds=$(grep 'skilljarCourseId' en/course.properties | cut -d':' -f2 | tr -d ' ')
+          skilljarCourseIds=$(grep 'skilljarCourseId' en/course.properties | cut -d':' -f2 | xargs)
           if [ -z "$skilljarCourseIds" ]; then
             echo "skilljarCourseIds not found in properties file."
             exit 1
           fi
-          # Replace all delimiters with a single type for easy parsing
-          skilljarCourseIds=$(echo $skilljarCourseIds | tr ',;-|+' '\n' | tr '\n' ',')
-          # Remove trailing comma if present
-          skilljarCourseIds=${skilljarCourseIds%,}
+          # Normalize delimiters to commas and remove extra delimiters and spaces
+          skilljarCourseIds=$(echo $skilljarCourseIds | tr ',;-|+' ',' | tr -s ',' | sed 's/,$//')
           echo "skilljar_course_ids=$skilljarCourseIds" >> $GITHUB_ENV
           echo "skilljar_course_ids=$skilljarCourseIds" >> $GITHUB_OUTPUT
-          echo $skilljarCourseIds
+          echo "Skilljar Course IDs: $skilljarCourseIds"
 
   match_and_update_skilljar:
     runs-on: ubuntu-latest
