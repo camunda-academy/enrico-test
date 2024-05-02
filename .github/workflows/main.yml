@@ -188,12 +188,13 @@ jobs:
         id: set_skilljar_course_ids
         run: |
           skilljarCourseIdLine=$(grep 'skilljarCourseId' en/course.properties)
-          # Extract the IDs, remove spaces, and replace known delimiters with a single comma
-          skilljarCourseIds=$(echo $skilljarCourseIdLine | sed 's/skilljarCourseId[:=][[:space:]]*//g' | tr ',;-|+' ',' | tr -s ',' )
-          # Ensure there's no trailing comma
-          skilljarCourseIds=$(echo $skilljarCourseIds | sed 's/,$//')
-          echo "skilljar_course_ids=$skilljarCourseIds" >> $GITHUB_OUTPUT
-          echo "Skilljar Course IDs: $skilljarCourseIds"
+          # Extract the IDs, remove the property name, surrounding whitespace, and any trailing comma
+          skilljarCourseIds=$(echo $skilljarCourseIdLine | sed 's/skilljarCourseId[:=][[:space:]]*//; s/,[[:space:]]*$//')
+          # Format as JSON array
+          skilljarCourseIdsJson=$(echo $skilljarCourseIds | jq -R '[split(",")]')
+          # Set the output 
+          echo "skilljar_course_ids_JSON=${skilljarCourseIdsJson}" >> $GITHUB_OUTPUT
+          echo "Skilljar Course IDs JSON Array: $skilljarCourseIdsJson"
 
   match_and_update_skilljar:
     runs-on: ubuntu-latest
