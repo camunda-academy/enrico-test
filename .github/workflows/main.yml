@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Test changed-files
     outputs:
-      files_changed: ${{ steps.set_created_or_updated_file.outputs.created_or_updated_files }} 
+      proceed: ${{ steps.filter_new_dirs.outputs.proceed || steps.filter_updated_dirs.outputs.proceed }}
     steps:
       - uses: actions/checkout@v4
 
@@ -35,13 +35,6 @@ jobs:
         run: |
           echo "${{ steps.changed-markdown-files.outputs.added_files }}" > new-files.txt
           cat new-files.txt
-
-      - name: Upload new files list as artifact
-        uses: actions/upload-artifact@v4
-        if: steps.changed-markdown-files.outputs.added_files != ''
-        with:
-          name: new-md-image-files
-          path: new-files.txt
   
       - name: Save updated Markdown or image files to file
         if: steps.changed-markdown-files.outputs.modified_files != ''
@@ -49,19 +42,54 @@ jobs:
           echo "${{ steps.changed-markdown-files.outputs.modified_files }}" > updated-files.txt
           cat updated-files.txt
 
-      - name: Upload updated files list as artifact
-        uses: actions/upload-artifact@v4
+      # Filter new files
+      - name: Filter new directories
+        id: filter_new_dirs
+        if: steps.changed-markdown-files.outputs.added_files != ''
+        run: |
+         if grep -oP 'en/lessons/\K[^/]*' new-files.txt > new_relevant_dirs.txt; then
+           echo "New relevant directories found. Proceeding with the job."
+           echo "proceed=true" >> $GITHUB_OUTPUT
+         else
+           echo "No new relevant directories found."
+           echo "proceed=false" >> $GITHUB_OUTPUT
+         fi
+
+     # Filter updated files
+      - name: Filter updated directories
+        id: filter_updated_dirs
         if: steps.changed-markdown-files.outputs.modified_files != ''
+        run: |
+         if grep -oP 'en/lessons/\K[^/]*' updated-files.txt > updated_relevant_dirs.txt; then
+          echo "Updated relevant directories found. Proceeding with the job."
+          echo "proceed=true" >> $GITHUB_OUTPUT
+         else
+          echo "No updated relevant directories found."
+          echo "proceed=false" >> $GITHUB_OUTPUT
+         fi
+        
+     # Upload new relevant directories list as artifact
+      - name: Upload new relevant directories list as artifact
+        if: steps.filter_new_dirs.outputs.proceed == 'true'
+        uses: actions/upload-artifact@v4
         with:
-          name: updated-md-image-files
-          path: updated-files.txt
+          name: new-relevant-dirs
+          path: new_relevant_dirs.txt
+        
+     # Upload updated relevant directories list as artifact
+      - name: Upload updated relevant directories list as artifact
+        if: steps.filter_updated_dirs.outputs.proceed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: updated-relevant-dirs
+          path: updated_relevant_dirs.txt
           
   create-release:
     needs: changed_files
     runs-on: ubuntu-latest
     outputs:
       proceed: ${{ steps.filter_dirs.outputs.proceed }}
-    if: needs.changed_files.outputs.files_changed == 'true'
+    if: needs.changed_files.outputs.proceed == 'true'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -91,37 +119,35 @@ jobs:
           draft: false
           prerelease: false
           
-      - name: Download changed markdown files artifact
+      - name: Download new relevant directories artifact
         uses: actions/download-artifact@v4
         with:
-          name: updated-md-image-files
-
-      - name: Extract relevant ZIP files to upload
-        id: filter_dirs
-        run: |
-          if grep -oP 'en/lessons/\K[^/]*' updated-files.txt > relevant_dirs.txt; then
-            echo "Relevant directories found. Proceeding with the job."
-            echo "proceed=true" >> $GITHUB_OUTPUT
-          else
-            echo "No relevant directories found. Exiting job successfully."
-            echo "proceed=false" >> $GITHUB_OUTPUT
-          fi
-          cat relevant_dirs.txt || true  # Ensures the step doesn't fail if cat has nothing to display
+          name: new-relevant-dirs
+          # If the artifact does not exist, this step will not fail the job.
   
-        
+      - name: Download updated relevant directories artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: updated-relevant-dirs
+          # If the artifact does not exist, this step will not fail the job.
+
       - name: Find, Upload Each Relevant File, and Save URLs
-        if: steps.filter_dirs.outputs.proceed == 'true'
         run: |
           # Initialize or clear the JSON file that will store the URLs
           echo "[]" > release-file-urls.json
-          for dir in $(cat relevant_dirs.txt); do
+          
+          # Combine new and updated directories lists into one file, avoiding duplicate entries
+          cat new_relevant_dirs.txt updated_relevant_dirs.txt 2>/dev/null | sort | uniq > combined_relevant_dirs.txt
+
+          # Process each directory
+          for dir in $(cat combined_relevant_dirs.txt); do
             for file in ./en/target/${dir}*.zip; do
               if [ -f "$file" ]; then
                 echo "Uploading $file"
                 response=$(curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
                       -H "Content-Type: $(file --mime-type -b $file)" \
                       --data-binary @"$file" \
-                      "https://uploads.github.com/repos/camunda-academy/enrico-test/releases/${{ steps.create_release.outputs.id }}/assets?name=$(basename $file)")
+                      "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_release.outputs.id }}/assets?name=$(basename $file)")
                 url=$(echo $response | jq -r .browser_download_url)
                 
                 # Construct JSON object and append to the array
@@ -133,7 +159,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload URL list as artifact
-        if: steps.filter_dirs.outputs.proceed == 'true'
+        if: needs.changed_files.outputs.proceed == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: release-file-urls

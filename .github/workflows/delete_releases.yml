@@ -1,7 +1,9 @@
+# For cleaning up releases during testing
+
 on:
     push:
       branches:
-        - master  # or any other branch you want to monitors
+        - master
 
 jobs:
     delete-all-releases:
