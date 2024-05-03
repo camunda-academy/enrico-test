@@ -209,7 +209,7 @@ jobs:
           echo "skilljar_course_ids=$skilljarCourseIdsJson" >> $GITHUB_OUTPUT
           echo $skilljarCourseIdsJson
 
-  match_and_update_skilljar:
+  for-each-courseId-create-update-lessons:
     runs-on: ubuntu-latest
     needs: [get_skilljar_course_id]
     strategy:
@@ -344,6 +344,7 @@ jobs:
                   -d "content_web_package_id=$content_web_package_id")
                 
                 echo "Updated lesson $lessonId with web package ID: $content_web_package_id"
+                echo "$update_response"
               else
                 # Create a new lesson object
                 create_response=$(curl -s -X POST "https://api.skilljar.com/v1/lessons" \
@@ -359,6 +360,7 @@ jobs:
                   }')
                 
                 echo "Created new lesson with title: $title and web package ID: $content_web_package_id"
+                echo "$create_response"
               fi
             done        
         env:
