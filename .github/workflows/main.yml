@@ -285,6 +285,69 @@ jobs:
           echo "Matched lessons with URLs and status:"
           cat lessonsToChange.json
 
-        
+      - name: Process lessons and update data
+        run: |
+            # Load the JSON data from the lessons file
+            lessons=$(cat lessonsToChange.json)
+            echo "$lessons"
+            
+            # Iterate over each lesson entry
+            echo "$lessons" | jq -c '.[]' | while read -r lesson; do
+              url=$(echo $lesson | jq -r .url)
+              title=$(echo $lesson | jq -r .title)
+              lessonId=$(echo $lesson | jq -r .lesson_id)
+              courseId=$(echo $lesson | jq -r .course_id)
+              status=$(echo $lesson | jq -r .status) # Extract the status
+              echo "Analyzing:"
+              echo "Title: $title"
+              echo "Lesson ID: $lessonId"
+              echo "Course ID: $courseId"
+              echo "URL: $url"
+              echo "Status: $status"
+              
+              # Step 1: Create a web package
+              response=$(curl -s -X POST "https://api.skilljar.com/v1/web-packages" \
+              -u ${{ secrets.SKILLJAR_SECRET }}: \
+              -H "Content-Type: application/json" \
+              -H "Accept: */*" \
+              -d '{
+                "content_url": "'"$url"'",
+                "web_package": {
+                  "title": "'"$title"'",
+                  "redirect_on_completion": true,
+                  "sync_on_completion": true
+                }
+              }')
+              
+              # Step 2: Extract the content_web_package_id from the response
+              content_web_package_id=$(echo $response | jq -r .id)
+              echo "Created web package with ID: $content_web_package_id for Lesson ID: $lessonId"
+              
+              # Step 3: Check the status and perform the appropriate action
+              if [[ "$status" == "updated" ]]; then
+                # Update the existing lesson object
+                update_response=$(curl -s -X PUT "https://api.skilljar.com/v1/lessons/$lessonId?course_id=$courseId" \
+                  -u ${{ secrets.SKILLJAR_SECRET }}: \
+                  -H "Content-Type: application/x-www-form-urlencoded" \
+                  -d "content_web_package_id=$content_web_package_id")
+                
+                echo "Updated lesson $lessonId with web package ID: $content_web_package_id"
+              else
+                # Create a new lesson object
+                create_response=$(curl -s -X POST "https://api.skilljar.com/v1/lessons" \
+                  -u ${{ secrets.SKILLJAR_SECRET }}: \
+                  -H "Content-Type: application/json" \
+                  -H "Accept: */*" \
+                  -d '{
+                    "title": "'"$title"'",
+                    "course_id": "'"$courseId"'",
+                    "content_web_package_id": "'"$content_web_package_id"'",
+                    "order": 100,
+                    "type": "WEB_PACKAGE"
+                  }')
+                
+                echo "Created new lesson with title: $title and web package ID: $content_web_package_id"
+              fi
+            done        
         env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}        
