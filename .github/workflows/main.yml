@@ -189,11 +189,11 @@ jobs:
         run: |
           skilljarCourseIdLine=$(grep 'skilljarCourseId' en/course.properties)
           skilljarCourseIds=$(echo $skilljarCourseIdLine | sed 's/skilljarCourseId[:=][[:space:]]*//; s/,[[:space:]]*$//')
-          # Format as JSON array
-          skilljarCourseIdsJson=$(echo $skilljarCourseIds | jq -R 'split(",") | map(. | gsub("^\\s+|\\s+$";""))')
-          # Output the JSON array to the workflow
-          echo "skilljar_course_ids='$skilljarCourseIdsJson'" >> GITHUB_OUTPUT
-          echo $skilljarCourseIdsJson
+          # Replace commas with spaces to create a space-separated list
+          skilljarCourseIdsSpaceSeparated=$(echo $skilljarCourseIds | tr ',' ' ')
+          # Output the space-separated list to the workflow
+          echo "skilljar_course_ids=$skilljarCourseIdsSpaceSeparated" >> $GITHUB_OUTPUT
+          echo $skilljarCourseIdsSpaceSeparated
 
   match_and_update_skilljar:
     runs-on: ubuntu-latest
