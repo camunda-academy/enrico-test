@@ -239,7 +239,7 @@ jobs:
           echo "[]" > lessonsToChange.json
       
           # Load the Skilljar response from a file into a variable for later processing
-          skilljarResponse=$(cat skilljarResponse.json)
+          skilljarResponse=$(cat skilljarResponse-${{ matrix.skilljar_course_id }}.json)
           echo "Skilljar Response:"
           echo "$skilljarResponse"
       
