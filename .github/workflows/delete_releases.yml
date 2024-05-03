@@ -1,4 +1,4 @@
-# For cleaning up releases during testing
+# For cleaning up releases and tagsduring testing
 
 on:
     push:
