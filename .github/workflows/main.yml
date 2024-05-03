@@ -189,11 +189,11 @@ jobs:
         run: |
           skilljarCourseIdLine=$(grep 'skilljarCourseId' en/course.properties)
           skilljarCourseIds=$(echo $skilljarCourseIdLine | sed 's/skilljarCourseId[:=][[:space:]]*//; s/,[[:space:]]*$//')
-          # Replace commas with spaces to create a space-separated list
-          skilljarCourseIdsSpaceSeparated=$(echo $skilljarCourseIds | tr ',' ' ')
-          # Output the space-separated list to the workflow
-          echo "skilljar_course_ids=$skilljarCourseIdsSpaceSeparated" >> $GITHUB_OUTPUT
-          echo $skilljarCourseIdsSpaceSeparated
+          # Convert to a newline-separated string and then to a JSON array
+          skilljarCourseIdsJson=$(echo $skilljarCourseIds | tr ',' '\n' | jq -R -s -c 'split("\n") | map(select(. != ""))')
+          # Output the JSON array to the workflow
+          echo "skilljar_course_ids=$skilljarCourseIdsJson" >> $GITHUB_OUTPUT
+          echo $skilljarCourseIdsJson
 
   match_and_update_skilljar:
     runs-on: ubuntu-latest
@@ -201,7 +201,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        skilljar_course_id: ${{ fromJson(needs.get_skilljar_course_id.outputs.skilljar_course_ids) }}
+        skilljar_course_id: ${{ needs.get_skilljar_course_id.outputs.skilljar_course_ids }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
