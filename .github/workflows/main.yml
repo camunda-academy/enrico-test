@@ -330,13 +330,15 @@ jobs:
                   "sync_on_completion": true
                 }
               }')
+              echo "$(date '+%Y%m%d:%H %M %S') Before sleeping"
               
               # sync_on_completion doesn't seem to work, let's wait for some seconds.
               sleep 10
 
               # Step 2: Extract the content_web_package_id from the response
               content_web_package_id=$(echo $response | jq -r .id)
-              echo "Created web package with ID: $content_web_package_id"
+              echo "$(date '+%Y%m%d:%H %M %S') Created web package with ID: $content_web_package_id for Lesson ID: $lessonId"
+              echo "$response"
               
               # Step 3: Check the status and perform the appropriate action
               if [[ "$status" == "updated" ]]; then
