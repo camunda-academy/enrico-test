@@ -68,4 +68,4 @@ The process will be executed, and you should get a status similar to the followi
 15. In the variables list you will see the variable you have defined in the process which is representing the output of the decision table.
 16. You can follow this method to test the other rules.
 
-abcdfflglGfGgg
+abcdfflglGfGggA
