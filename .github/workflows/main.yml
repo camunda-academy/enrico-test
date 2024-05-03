@@ -190,9 +190,9 @@ jobs:
           skilljarCourseIdLine=$(grep 'skilljarCourseId' en/course.properties)
           skilljarCourseIds=$(echo $skilljarCourseIdLine | sed 's/skilljarCourseId[:=][[:space:]]*//; s/,[[:space:]]*$//')
           # Format as JSON array
-          skilljarCourseIdsJson=$(echo $skilljarCourseIds | jq -R 'split(",") | map(. | gsub("^\\s+|\\s+$";"")) | @json')
+          skilljarCourseIdsJson=$(echo $skilljarCourseIds | jq -R 'split(",") | map(. | gsub("^\\s+|\\s+$";""))')
           # Output the JSON array to the workflow
-          echo "skilljar_course_ids='$skilljarCourseIdsJson'" >> $GITHUB_OUTPUT
+          echo "skilljar_course_ids=$(echo $skilljarCourseIdsJson)" >> GITHUB_OUTPUT
           echo $skilljarCourseIdsJson
 
   match_and_update_skilljar:
