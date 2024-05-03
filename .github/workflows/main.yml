@@ -324,7 +324,7 @@ jobs:
               -H "Content-Type: application/json" \
               -H "Accept: */*" \
               -d '{               
-                "content_url": "https://github.com/ecuriotto/converter-example/releases/download/0.2/exercise-4-0.4.zip",
+                "content_url": "'"$url"'",
                 "web_package": {
                   "title": "'"$title"'",
                   "redirect_on_completion": false,
