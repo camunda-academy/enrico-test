@@ -249,7 +249,11 @@ jobs:
           echo "$skilljarResponse"
       
           # Process each entry from release-file-urls.json, which contains the name, URL, and status of files
-          jq -r '.[] | {name: .name, status: .status}' release-file-urls.json | while IFS=$'\t' read -r name status; do
+          jq -c '.[]' release-file-urls.json | while IFS= read -r line; do
+            # Extract name and status using jq
+            name=$(echo "$line" | jq -r '.name')
+            status=$(echo "$line" | jq -r '.status')
+            
             # Normalize the name for comparison by replacing spaces with hyphens and converting to lowercase
             modified_name=$(echo "$name" | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
             echo "Processing name: $name (Modified: $modified_name) with status: $status"
@@ -257,15 +261,15 @@ jobs:
             # Compare the modified name with titles from the Skilljar response to find a match
             match=$(echo "$skilljarResponse" | jq -r --arg modified_name "$modified_name" \
               '.results[] | select(.title | ascii_downcase | gsub(" "; "-") == $modified_name) | {id: .id, title: .title, course_id: .course_id}')
-            
+      
             # Check if a match was found by looking for a non-empty ID
             if [ ! -z "$(echo $match | jq -r .id)" ]; then
               # Extract the ID, title, and course_id from the matched Skilljar lesson
               match_id=$(echo $match | jq -r .id)
               match_title=$(echo $match | jq -r .title)
               match_course_id=$(echo $match | jq -r .course_id)
-              # Retrieve the corresponding URL from release-file-urls.json
-              url=$(jq -r --arg name "$name" '.[] | select(.name == $name) | .url' release-file-urls.json)
+              # Retrieve the corresponding URL from the original line
+              url=$(echo "$line" | jq -r '.url')
               echo "Match found: ID $match_id with URL: $url, Title: $match_title, Course ID: $match_course_id, Status: $status"
               
               # Append the matched lesson details, including status, to the lessonsToChange.json array
@@ -280,6 +284,7 @@ jobs:
           # Display the final list of matched lessons with their details
           echo "Matched lessons with URLs and status:"
           cat lessonsToChange.json
+
         
         env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}        
