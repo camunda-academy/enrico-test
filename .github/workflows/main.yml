@@ -192,7 +192,7 @@ jobs:
           # Format as JSON array
           skilljarCourseIdsJson=$(echo $skilljarCourseIds | jq -R 'split(",") | map(. | gsub("^\\s+|\\s+$";"")) | @json')
           # Output the JSON array to the workflow
-          echo "skilljar_course_ids=$skilljarCourseIdsJson" >> $GITHUB_OUTPUT
+          echo "skilljar_course_ids='$skilljarCourseIdsJson'" >> $GITHUB_OUTPUT
           echo $skilljarCourseIdsJson
 
   match_and_update_skilljar:
