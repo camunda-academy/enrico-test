@@ -210,7 +210,6 @@ jobs:
           echo "Processing Skilljar course ID: ${{ matrix.skilljar_course_id }}"
 
       - name: Fetch data from Skilljar for each courseId in the matrix
-        if: true == false
         run: |
           echo "Fetching data for courseId: ${{ matrix.skilljar_course_id }}"
           response=$(curl -s -X GET \
