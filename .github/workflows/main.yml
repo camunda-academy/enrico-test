@@ -207,7 +207,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Print skilljar course IDs output
         run: |
-          echo "Skilljar course IDs: ${{ needs.get_skilljar_course_id.outputs.skilljar_course_ids }}"
+          echo "Skilljar course IDs: $skilljar_course_id
 
       - name: Fetch data from Skilljar for each courseId in the matrix
         if: true == false
