@@ -318,12 +318,13 @@ jobs:
               echo "Status: $status"
               
               # Step 1: Create a web package
+              #"content_url": "'"$url"'",
               response=$(curl -s -X POST "https://api.skilljar.com/v1/web-packages" \
               -u ${{ secrets.SKILLJAR_SECRET }}: \
               -H "Content-Type: application/json" \
               -H "Accept: */*" \
-              -d '{
-                "content_url": "'"$url"'",
+              -d '{               
+                "content_url": "https://github.com/ecuriotto/converter-example/releases/download/0.2/exercise-4-0.4.zip",
                 "web_package": {
                   "title": "'"$title"'",
                   "redirect_on_completion": false,

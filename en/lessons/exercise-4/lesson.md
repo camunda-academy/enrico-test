@@ -30,4 +30,4 @@ An example of input for testing is the following:
 
 `{"creditScore":82,"borrowersIncome":1200,"expenses":800,"installmentRate":100,"knownCustomer":true,"loanAmount":1000,"employment":"self-employed"}`
 
-abbfdèoffhhtrgfgdfgiopgfgdtrtr786565totI
+abbfdèoffhhtrgfgdfgiopgfgdtrtr786565totI8
