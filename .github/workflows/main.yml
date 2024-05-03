@@ -354,7 +354,7 @@ jobs:
                 echo "Updated lesson $lessonId with web package ID: $content_web_package_id"
                 echo "$update_response"
               else
-                new_order = $((highest_order + 1))
+                new_order=$((highest_order + 1))
                 echo "New order will be: $new_order"
                 # Create a new lesson object
                 create_response=$(curl -s -X POST "https://api.skilljar.com/v1/lessons" \
@@ -365,7 +365,7 @@ jobs:
                     "title": "'"$title"'",
                     "course_id": "'"$courseId"'",
                     "content_web_package_id": "'"$content_web_package_id"'",
-                    "order": $new_order,
+                    "order": '"$new_order"',
                     "type": "WEB_PACKAGE"
                   }')
                 
