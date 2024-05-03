@@ -10,34 +10,40 @@ jobs:
         runs-on: ubuntu-latest
         if: contains(github.event.head_commit.message, 'delete all releases')
         steps:
-        - name: Delete all releases and associated tags
-          run: |
-            # Set the GitHub API endpoints for releases and tags in the repository.
-            API_RELEASES_ENDPOINT="https://api.github.com/repos/${{ github.repository }}/releases"
-            API_TAGS_ENDPOINT="https://api.github.com/repos/${{ github.repository }}/git/refs/tags"
-            
-            # Get a list of all release IDs and their associated tag names.
-            releases=$(curl -s -H "Authorization: token $GITHUB_TOKEN" $API_RELEASES_ENDPOINT)
-            release_ids=$(echo "$releases" | jq -r '.[].id')
-            tag_names=$(echo "$releases" | jq -r '.[].tag_name')
-    
-            # Loop through the list and delete each release.
-            for id in $release_ids; do
-                echo "Deleting release with ID: $id"
-                curl -s -X DELETE -H "Authorization: token $GITHUB_TOKEN" "$API_RELEASES_ENDPOINT/$id"
-            done
-            
-            echo "All releases have been deleted."
-    
-            # Loop through the list of tag names and delete each tag.
-            for tag in $tag_names; do
-                if [ -n "$tag" ]; then
-                echo "Deleting tag: $tag"
-                curl -s -X DELETE -H "Authorization: token $GITHUB_TOKEN" "$API_TAGS_ENDPOINT/$tag"
-                fi
-            done
-            
-            echo "All associated tags have been deleted."
+          - name: Delete all releases and associated tags
+            run: |
+                # Set the GitHub API endpoints for releases and tags in the repository.
+                API_RELEASES_ENDPOINT="https://api.github.com/repos/${{ github.repository }}/releases"
+                API_TAGS_ENDPOINT="https://api.github.com/repos/${{ github.repository }}/git/refs/tags"
+                
+                # Get a list of all releases.
+                releases=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" $API_RELEASES_ENDPOINT)
+                
+                # Debug: Print the raw JSON to check the structure
+                echo "Raw releases JSON:"
+                echo "$releases"
+        
+                # Extract release IDs and tag names if the structure is as expected.
+                release_ids=$(echo "$releases" | jq -r '.[] | .id')
+                tag_names=$(echo "$releases" | jq -r '.[] | .tag_name')
+        
+                # Loop through the list and delete each release.
+                for id in $release_ids; do
+                    echo "Deleting release with ID: $id"
+                    curl -s -X DELETE -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "$API_RELEASES_ENDPOINT/$id"
+                done
+                
+                echo "All releases have been deleted."
+        
+                # Loop through the list of tag names and delete each tag.
+                for tag in $tag_names; do
+                    if [ -n "$tag" ]; then
+                    echo "Deleting tag: $tag"
+                    curl -s -X DELETE -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "$API_TAGS_ENDPOINT/$tag"
+                    fi
+                done
+                
+                echo "All associated tags have been deleted."
             env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
