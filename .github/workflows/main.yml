@@ -326,12 +326,12 @@ jobs:
                 "content_url": "'"$url"'",
                 "web_package": {
                   "title": "'"$title"'",
-                  "redirect_on_completion": true,
-                  "sync_on_completion": true
+                  "redirect_on_completion": false,
+                  "sync_on_completion": false
                 }
               }')
               echo "$(date '+%Y%m%d:%H %M %S') Before sleeping"
-              
+
               # sync_on_completion doesn't seem to work, let's wait for some seconds.
               sleep 10
 
