@@ -233,6 +233,11 @@ jobs:
           echo "Skilljar API Response for $courseId:"
           echo "$response"
 
+      - name: get file urls
+        uses: actions/download-artifact@v4
+        with:
+          name: release-file-urls
+
       - name: Match IDs and Save to JSON
         run: |
           # Initialize the JSON array to store matched lessons with additional details
