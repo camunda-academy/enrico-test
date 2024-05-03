@@ -201,7 +201,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        skilljar_course_id: ${{ needs.get_skilljar_course_id.outputs.skilljar_course_ids }}
+        skilljar_course_id: ${{ fromJson(needs.get_skilljar_course_id.outputs.skilljar_course_ids) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
