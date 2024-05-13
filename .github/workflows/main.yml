@@ -91,8 +91,13 @@ jobs:
       proceed: ${{ steps.filter_dirs.outputs.proceed }}
     if: needs.changed_files.outputs.proceed == 'true'
     steps:
-      - name: Checkout code
+      - name: Checkout my code
         uses: actions/checkout@v4
+
+      - name: Checkout code from Release repository
+        uses: actions/checkout@v4
+        with:
+          repository: ecuriotto/converter-example 
         
       - name: Setup Jar File Path
         id: setup-jar-path
@@ -107,7 +112,20 @@ jobs:
         
       - name: Execute JAR file
         run: java -jar ${{ env.jar-path }} ./en
-
+        
+      - name: Create Git Tag
+        run: |
+          tag_name="release-${{ github.sha }}"
+          git tag -a $tag_name -m "Version $tag_name"
+          echo "tag_name=$tag_name" >> $GITHUB_ENV
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+      
+      - name: Push Tag to GitHub
+        run: git push origin ${{ env.tag_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+          
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
