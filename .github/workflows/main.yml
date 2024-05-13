@@ -185,7 +185,7 @@ jobs:
                 response=$(curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
                       -H "Content-Type: application/zip" \
                       --data-binary @"$file" \
-                      "https://uploads.github.com/repos/enrico-temp-storage/releases/${{ steps.create_release.outputs.id }}/assets?name=$(basename $file)")
+                      "https://uploads.github.com/repos/camunda-academy/enrico-temp-storage/releases/${{ steps.create_release.outputs.id }}/assets?name=$(basename $file)")
                     if [ $? -ne 0 ]; then
                       echo "Curl command failed."
                       exit 1
