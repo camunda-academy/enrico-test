@@ -153,7 +153,7 @@ jobs:
                 response=$(curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
                       -H "Content-Type: $(file --mime-type -b $file)" \
                       --data-binary @"$file" \
-                      "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_release.outputs.id }}/assets?name=$(basename $file)")
+                      "https://uploads.github.com/repos/enrico-temp-storage/releases/${{ steps.create_release.outputs.id }}/assets?name=$(basename $file)")
                 url=$(echo $response | jq -r .browser_download_url)
                 
                 # Construct JSON object and append to the array indicating the file is new
@@ -170,7 +170,7 @@ jobs:
                 response=$(curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
                       -H "Content-Type: $(file --mime-type -b $file)" \
                       --data-binary @"$file" \
-                      "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_release.outputs.id }}/assets?name=$(basename $file)")
+                      "https://uploads.github.com/repos/enrico-temp-storage/releases/${{ steps.create_release.outputs.id }}/assets?name=$(basename $file)")
                 url=$(echo $response | jq -r .browser_download_url)
                 
                 # Construct JSON object and append to the array indicating the file is updated
