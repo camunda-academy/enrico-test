@@ -116,8 +116,8 @@ jobs:
         with:
           tag_name: release-${{ github.sha }}
           release_name: Release for ${{ github.sha }}
-          owner: camunda-academy
-          repo: enrico-temp-storage
+          owner: ecuriotto
+          repo: converter-example
           draft: false
           prerelease: false
           
@@ -187,7 +187,7 @@ jobs:
                 response=$(curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
                       -H "Content-Type: application/zip" \
                       --data-binary @"$file" \
-                      "https://uploads.github.com/repos/camunda-academy/enrico-temp-storage/releases/${{ steps.create_release.outputs.id }}/assets?name=$(basename $file)")
+                      "https://uploads.github.com/repos/ecuriotto/converter-example/releases/${{ steps.create_release.outputs.id }}/assets?name=$(basename $file)")
                     if [ $? -ne 0 ]; then
                       echo "Curl command failed."
                       exit 1
