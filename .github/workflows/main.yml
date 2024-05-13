@@ -154,7 +154,22 @@ jobs:
                       -H "Content-Type: $(file --mime-type -b $file)" \
                       --data-binary @"$file" \
                       "https://uploads.github.com/repos/enrico-temp-storage/releases/${{ steps.create_release.outputs.id }}/assets?name=$(basename $file)")
-                url=$(echo $response | jq -r .browser_download_url)
+                    if [ $? -ne 0 ]; then
+                      echo "Curl command failed."
+                      exit 1
+                    fi
+                
+                    error_message=$(echo $response | jq -r .message)
+                    if [ "$error_message" != "null" ]; then
+                      echo "Error: $error_message"
+                      exit 1
+                    fi
+                
+                    url=$(echo $response | jq -r .browser_download_url)                
+                    if [ -z "$url" ]; then
+                      echo "Failed to get URL from response."
+                      exit 1
+                    fi
                 
                 # Construct JSON object and append to the array indicating the file is new
                 jq --arg dir "$dir" --arg url "$url" '. += [{"name": $dir, "url": $url, "status": "new"}]' release-file-urls.json > temp.json && mv temp.json release-file-urls.json
@@ -171,7 +186,22 @@ jobs:
                       -H "Content-Type: $(file --mime-type -b $file)" \
                       --data-binary @"$file" \
                       "https://uploads.github.com/repos/enrico-temp-storage/releases/${{ steps.create_release.outputs.id }}/assets?name=$(basename $file)")
-                url=$(echo $response | jq -r .browser_download_url)
+                    if [ $? -ne 0 ]; then
+                      echo "Curl command failed."
+                      exit 1
+                    fi
+                
+                    error_message=$(echo $response | jq -r .message)
+                    if [ "$error_message" != "null" ]; then
+                      echo "Error: $error_message"
+                      exit 1
+                    fi
+                
+                    url=$(echo $response | jq -r .browser_download_url)                
+                    if [ -z "$url" ]; then
+                      echo "Failed to get URL from response."
+                      exit 1
+                    fi
                 
                 # Construct JSON object and append to the array indicating the file is updated
                 jq --arg dir "$dir" --arg url "$url" '. += [{"name": $dir, "url": $url, "status": "updated"}]' release-file-urls.json > temp.json && mv temp.json release-file-urls.json
