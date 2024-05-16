@@ -142,9 +142,11 @@ jobs:
             GITHUB_TOKEN: ${{ secrets.PAT }}
             
         - name: Push Tag to GitHub
-          run: git push origin ${{ env.tag_name }}
           env:
-            GITHUB_TOKEN: ${{ secrets.PAT }}
+            PAT_TOKEN: ${{ secrets.PAT }}
+          run: |
+            git remote set-url origin https://$PAT_TOKEN@github.com/camunda-academy/enrico-temp-storage.git
+            git push origin ${{ env.tag_name }}
                 
         - name: Create Release
           id: create_release
