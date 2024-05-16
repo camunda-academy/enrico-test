@@ -139,7 +139,7 @@ jobs:
             git tag -a $tag_name -m "Version $tag_name"
             echo "tag_name=$tag_name" >> $GITHUB_ENV
             env:
-            GITHUB_TOKEN: ${{ secrets.PAT }}
+              GITHUB_TOKEN: ${{ secrets.PAT }}
             
         - name: Push Tag to GitHub
           run: git push origin ${{ env.tag_name }}

@@ -37,4 +37,3 @@ As per the Car Loan Granting Decision Table the Risk Level input options should 
 - Try other input combinations as well
 
 Updated!
-fhkf96787878f8
