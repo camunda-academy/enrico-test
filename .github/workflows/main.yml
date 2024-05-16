@@ -1,9 +1,12 @@
 name: Create zip files of updated lessons and deploy to skilljar
 
+#on:
+#  push:
+#    branches:
+#      - master
+
 on:
-  push:
-    branches:
-      - master
+  workflow_dispatch:
 
 jobs:
   # ------------------------------------------------------------------------------------------------------------------------------------------------

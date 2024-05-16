@@ -1,0 +1,118 @@
+name: Create zip files of updated lessons and deploy to skilljar
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  # ------------------------------------------------------------------------------------------------------------------------------------------------
+  # Event `pull_request`: Compare the last commit of the main branch or last remote commit of the PR branch -> to the current commit of a PR branch.
+  # ------------------------------------------------------------------------------------------------------------------------------------------------
+  changed_files:
+    runs-on: ubuntu-latest
+    name: Test changed-files
+    outputs:
+      proceed: ${{ steps.filter_new_dirs.outputs.proceed || steps.filter_updated_dirs.outputs.proceed }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get all changed markdown files
+        id: changed-markdown-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+             **.md
+             **.png
+             **.jpg
+             **.jpeg
+      - name: Check if at least one file is updated or created
+        id: set_created_or_updated_file
+        run: echo "created_or_updated_files=${{ steps.changed-markdown-files.outputs.any_changed == 'true' }}" >> $GITHUB_OUTPUT           
+
+      - name: Save new Markdown or image files to file
+        if: steps.changed-markdown-files.outputs.added_files != ''
+        run: |
+          echo "${{ steps.changed-markdown-files.outputs.added_files }}" > new-files.txt
+          cat new-files.txt
+  
+      - name: Save updated Markdown or image files to file
+        if: steps.changed-markdown-files.outputs.modified_files != ''
+        run: |
+          echo "${{ steps.changed-markdown-files.outputs.modified_files }}" > updated-files.txt
+          cat updated-files.txt
+
+      # Filter new files
+      - name: Filter new directories
+        id: filter_new_dirs
+        if: steps.changed-markdown-files.outputs.added_files != ''
+        run: |
+         if grep -oP 'en/lessons/\K[^/]*' new-files.txt > new_relevant_dirs.txt; then
+           echo "New relevant directories found. Proceeding with the job."
+           echo "proceed=true" >> $GITHUB_OUTPUT
+         else
+           echo "No new relevant directories found."
+           echo "proceed=false" >> $GITHUB_OUTPUT
+         fi
+
+     # Filter updated files
+      - name: Filter updated directories
+        id: filter_updated_dirs
+        if: steps.changed-markdown-files.outputs.modified_files != ''
+        run: |
+         if grep -oP 'en/lessons/\K[^/]*' updated-files.txt > updated_relevant_dirs.txt; then
+          echo "Updated relevant directories found. Proceeding with the job."
+          echo "proceed=true" >> $GITHUB_OUTPUT
+         else
+          echo "No updated relevant directories found."
+          echo "proceed=false" >> $GITHUB_OUTPUT
+         fi
+        
+     # Upload new relevant directories list as artifact
+      - name: Upload new relevant directories list as artifact
+        if: steps.filter_new_dirs.outputs.proceed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: new-relevant-dirs
+          path: new_relevant_dirs.txt
+        
+     # Upload updated relevant directories list as artifact
+      - name: Upload updated relevant directories list as artifact
+        if: steps.filter_updated_dirs.outputs.proceed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: updated-relevant-dirs
+          path: updated_relevant_dirs.txt
+          
+  build-zip-files:
+    needs: changed_files
+    runs-on: ubuntu-latest
+    outputs:
+      proceed: ${{ steps.filter_dirs.outputs.proceed }}
+    if: needs.changed_files.outputs.proceed == 'true'
+    steps:
+      - name: Checkout my code
+        uses: actions/checkout@v4
+        
+      - name: Setup Jar File Path
+        id: setup-jar-path
+        run: echo "jar-path=academy-md-html-0.2.jar" >> $GITHUB_ENV
+      
+      - name: Download Release builder Artifact from Repository "academy-md-html"
+        # "https://github.com/camunda-academy/academy-md-html/releases/download/v0.2/${{ env.jar-path }}" \
+        # -H "Authorization: Bearer ${{ secrets.PAT }}"
+        run: |
+          curl -fSL -o ${{ env.jar-path }} \
+          "https://github.com/ecuriotto/converter-example/releases/download/0.2/${{ env.jar-path }}"
+        
+      - name: Execute JAR file
+        run: java -jar ${{ env.jar-path }} ./en
+        
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: zip-files
+          path: ./en/target/*.zip       
+
+          
+
