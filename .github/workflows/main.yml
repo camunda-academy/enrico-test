@@ -99,19 +99,23 @@ jobs:
       - name: Create Release
         id: create_release
         run: |
-          # Create the release and capture the output
-          output=$(gh release create release-${{ github.sha }} \
+          # Create the release and capture the URL of the created release
+          release_url=$(gh release create release-${{ github.sha }} \
             --title "Release for ${{ github.sha }}" \
             --notes "Release notes or description" \
             --draft=false \
             --prerelease=false)
-      
-          # The output will contain the URL of the created release, extract the release ID from it
-          release_id=$(echo "$output" | grep -oP 'releases/tag/release-\K.*')
+          echo "Release URL: $release_url"
+          
+          # Use GitHub API to fetch the release ID by the tag name
+          release_data=$(curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/tags/release-${{ github.sha }}")
+          
+          # Extract the numerical ID from the release data
+          release_id=$(echo "$release_data" | jq '.id')
           echo "Release ID: $release_id"
       
-          # Save the release ID as an environment variable and as a step output
-          echo "release_id=$release_id" >> $GITHUB_ENV
+          # Save the release ID as a step output
           echo "release_id=$release_id" >> $GITHUB_OUTPUT
         env:
           GH_TOKEN: ${{ github.token }}  
