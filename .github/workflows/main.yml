@@ -132,22 +132,26 @@ jobs:
           for row in $(jq -c '.[]' file_list.json); do
             file=$(echo $row | jq -r '.file')
             status=$(echo $row | jq -r '.status')
-            # Assuming that the file path is relative to the ./target directory
-            # Update the path according to where the zip files are located
-            filepath="./en/target/${file%.md}.zip"
+      
+            # Extract the base directory name (e.g., "exercise-1") from the file path
+            base_dir=$(basename $(dirname $file))
+      
+            # Find the corresponding zip file in the ./en/target directory
+            # The zip file name pattern is based on the base directory name
+            zip_file=$(find ./en/target -name "${base_dir}-*.zip" -print -quit)
             
-            if [ -f "$filepath" ]; then
-              echo "Uploading $filepath"
+            if [[ -f "$zip_file" ]]; then
+              echo "Uploading $zip_file"
               response=$(curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-                    -H "Content-Type: $(file --mime-type -b "$filepath")" \
-                    --data-binary @"$filepath" \
-                    "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ needs.create-release.outputs.release_id }}/assets?name=$(basename "$filepath")")
+                    -H "Content-Type: $(file --mime-type -b "$zip_file")" \
+                    --data-binary @"$zip_file" \
+                    "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ needs.create-release.outputs.release_id }}/assets?name=$(basename "$zip_file")")
               url=$(echo $response | jq -r .browser_download_url)
               
               # Construct JSON object and append to the array
-              jq --arg filepath "$filepath" --arg url "$url" --arg status "$status" '. += [{"name": $filepath, "url": $url, "status": $status}]' release-file-urls.json > temp.json && mv temp.json release-file-urls.json
+              jq --arg zip_file "$zip_file" --arg url "$url" --arg status "$status" '. += [{"name": $zip_file, "url": $url, "status": $status}]' release-file-urls.json > temp.json && mv temp.json release-file-urls.json
             else
-              echo "File $filepath does not exist."
+              echo "Zip file for $base_dir does not exist."
             fi
           done
         env:
