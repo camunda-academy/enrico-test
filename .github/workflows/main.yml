@@ -125,6 +125,7 @@ jobs:
   
       - name: Upload zip files to release
         run: |
+          ls -l
           # Initialize or clear the JSON file that will store the URLs
           echo "[]" > release-file-urls.json
           
