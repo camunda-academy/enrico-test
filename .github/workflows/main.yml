@@ -10,12 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     name: Test changed files
     outputs:
-      proceed: ${{ steps.filter-files.outputs.proceed }}
+      proceed: ${{ steps.create_file_list.outputs.proceed }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Get new and changed files in repository
-        id: filter-files  # Ensure this matches the ID used in the expressions below
+        id: changed-files
         uses: tj-actions/changed-files@v44
         with:
           files: |
@@ -24,48 +24,49 @@ jobs:
               **.jpg
               **.jpeg
 
-      - name: Write directories with changed and new files
+      - name: Create list of new and updated files
+        id: create_file_list
         run: |
-              proceed=false
-              new_relevant_dirs=''
-              updated_relevant_dirs=''
-              # Filter new directories
-              if [[ -n "${{ steps.filter-files.outputs.added_files }}" ]]; then
-                echo "${{ steps.filter-files.outputs.added_files }}" | grep 'en/lessons/' > new_relevant_dirs.txt
-                if [[ -s new_relevant_dirs.txt ]]; then
-                  proceed=true
-                  new_relevant_dirs=$(cat new_relevant_dirs.txt)
-                  echo "New relevant directories:"
-                  cat new_relevant_dirs.txt
-                fi
-              fi
-              # Filter updated directories
-              if [[ -n "${{ steps.filter-files.outputs.modified_files }}" ]]; then
-                echo "${{ steps.filter-files.outputs.modified_files }}" | grep 'en/lessons/' > updated_relevant_dirs.txt
-                if [[ -s updated_relevant_dirs.txt ]]; then
-                  proceed=true
-                  updated_relevant_dirs=$(cat updated_relevant_dirs.txt)
-                  echo "Updated relevant directories:"
-                  cat updated_relevant_dirs.txt
-                fi
-              fi
-              echo "proceed=$proceed" >> $GITHUB_OUTPUT     
-              
-      # Upload new relevant directories list as artifact
-      - name: Upload new relevant directories list as artifact
-        if: steps.filter-files.outputs.new_relevant_dirs != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: new-relevant-dirs
-          path: new_relevant_dirs.txt
+          file_list=()
+          proceed=false
 
-      # Upload updated relevant directories list as artifact
-      - name: Upload updated relevant directories list as artifact
-        if: steps.filter-files.outputs.updated_relevant_dirs != ''
+          # Read new files
+          if [[ -n "${{ steps.changed-files.outputs.added_files }}" ]]; then
+            for file in ${{ steps.changed-files.outputs.added_files }}; do
+              [[ $file == en/lessons/* ]] && file_list+=("{\"file\":\"$file\",\"status\":\"new\"}")
+            done
+          fi
+
+          # Read updated files
+          if [[ -n "${{ steps.changed-files.outputs.modified_files }}" ]]; then
+            for file in ${{ steps.changed-files.outputs.modified_files }}; do
+              [[ $file == en/lessons/* ]] && file_list+=("{\"file\":\"$file\",\"status\":\"updated\"}")
+            done
+          fi
+          # Check if the file list is not empty
+          if [[ ${#file_list[@]} -gt 0 ]]; then
+            proceed=true
+            # Create JSON array
+            printf "[%s]" "$(IFS=,; echo "${file_list[*]}")" > file_list.json
+          else
+            # Create an empty JSON array
+            echo "[]" > file_list.json
+          fi
+
+          echo "File list:"
+          cat file_list.json
+
+          # Set outputs
+          echo "proceed=$proceed" >> $GITHUB_OUTPUT
+          
+
+      # Upload the file list as an artifact
+      - name: Upload file list as an artifact
+        if: steps.create_file_list.outputs.proceed == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: updated-relevant-dirs
-          path: updated_relevant_dirs.txt
+          name: file-list-artifact
+          path: file_list.json
           
   create-release:
     needs: changed_files
