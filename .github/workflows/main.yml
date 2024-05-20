@@ -125,6 +125,7 @@ jobs:
   
       - name: Upload zip files to release
         run: |
+          echo "List of files in ./"
           ls -l
           # Initialize or clear the JSON file that will store the URLs
           echo "[]" > release-file-urls.json
@@ -147,6 +148,7 @@ jobs:
                     -H "Content-Type: $(file --mime-type -b "$zip_file")" \
                     --data-binary @"$zip_file" \
                     "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ needs.create-release.outputs.release_id }}/assets?name=$(basename "$zip_file")")
+              echo $response
               url=$(echo $response | jq -r .browser_download_url)
               
               # Construct JSON object and append to the array
