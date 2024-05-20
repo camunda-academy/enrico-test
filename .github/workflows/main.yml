@@ -132,17 +132,22 @@ jobs:
           for row in $(jq -c '.[]' file_list.json); do
             file=$(echo $row | jq -r '.file')
             status=$(echo $row | jq -r '.status')
-            # Assuming that the file path is relative to the current directory
-            if [ -f "$file" ]; then
-              echo "Uploading $file"
+            # Assuming that the file path is relative to the ./target directory
+            # Update the path according to where the zip files are located
+            filepath="./en/target/${file%.md}.zip"
+            
+            if [ -f "$filepath" ]; then
+              echo "Uploading $filepath"
               response=$(curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-                    -H "Content-Type: $(file --mime-type -b $file)" \
-                    --data-binary @"$file" \
-                    "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ needs.create-release.outputs.release_id }}/assets?name=$(basename $file)")
+                    -H "Content-Type: $(file --mime-type -b "$filepath")" \
+                    --data-binary @"$filepath" \
+                    "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ needs.create-release.outputs.release_id }}/assets?name=$(basename "$filepath")")
               url=$(echo $response | jq -r .browser_download_url)
               
               # Construct JSON object and append to the array
-              jq --arg file "$file" --arg url "$url" --arg status "$status" '. += [{"name": $file, "url": $url, "status": $status}]' release-file-urls.json > temp.json && mv temp.json release-file-urls.json
+              jq --arg filepath "$filepath" --arg url "$url" --arg status "$status" '. += [{"name": $filepath, "url": $url, "status": $status}]' release-file-urls.json > temp.json && mv temp.json release-file-urls.json
+            else
+              echo "File $filepath does not exist."
             fi
           done
         env:
