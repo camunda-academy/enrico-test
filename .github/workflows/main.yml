@@ -91,12 +91,12 @@ jobs:
       - name: Upload Zip Files as Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: zip-files
-          path: ./target/*.zip
+          name: all-zip-files
+          path: .en/target/*.zip
   
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
+        uses: actions/create-release@v1.1.4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -113,79 +113,51 @@ jobs:
     needs: create-release
     runs-on: ubuntu-latest
     steps: 
-      - name: Download new relevant directories artifact
-        id: download-new-relevant-directories
+      - name: Download file list artifact
         uses: actions/download-artifact@v4
         with:
-          name: new-relevant-dirs
-        # If the artifact does not exist, this step will not fail the job.
-        continue-on-error: true
+          name: file-list-artifact
   
-      - name: Download updated relevant directories artifact
-        id: download-updated-relevant-directories
+      - name: Download all zip files artifact
         uses: actions/download-artifact@v4
         with:
-          name: updated-relevant-dirs
-        # If the artifact does not exist, this step will not fail the job.
-        continue-on-error: true
-
-      - name: Print message if artifact not found
-        if: ${{ steps.download-new-relevant-directories.outcome == 'failure' || steps.download-updated-relevant-directories.outcome == 'failure' }}
-        run: |
-          echo "One or more artifacts not found but this may be ok, let's go on!"
-
-      - name: Find, Upload Each Relevant File, and Save URLs
+          name: all-zip-files
+  
+      - name: Upload zip files to release
         run: |
           # Initialize or clear the JSON file that will store the URLs
           echo "[]" > release-file-urls.json
           
-          # Process each new directory
-          for dir in $(cat new_relevant_dirs.txt); do
-            for file in ./en/target/${dir}*.zip; do
-              if [ -f "$file" ]; then
-                echo "Uploading $file"
-                response=$(curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-                      -H "Content-Type: $(file --mime-type -b $file)" \
-                      --data-binary @"$file" \
-                      "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_release.outputs.id }}/assets?name=$(basename $file)")
-                url=$(echo $response | jq -r .browser_download_url)
-                
-                # Construct JSON object and append to the array indicating the file is new
-                jq --arg dir "$dir" --arg url "$url" '. += [{"name": $dir, "url": $url, "status": "new"}]' release-file-urls.json > temp.json && mv temp.json release-file-urls.json
-              fi
-            done
-          done
-
-          # Process each updated directory
-          for dir in $(cat updated_relevant_dirs.txt); do
-            for file in ./en/target/${dir}*.zip; do
-              if [ -f "$file" ]; then
-                echo "Uploading $file"
-                response=$(curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-                      -H "Content-Type: $(file --mime-type -b $file)" \
-                      --data-binary @"$file" \
-                      "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_release.outputs.id }}/assets?name=$(basename $file)")
-                url=$(echo $response | jq -r .browser_download_url)
-                
-                # Construct JSON object and append to the array indicating the file is updated
-                jq --arg dir "$dir" --arg url "$url" '. += [{"name": $dir, "url": $url, "status": "updated"}]' release-file-urls.json > temp.json && mv temp.json release-file-urls.json
-              fi
-            done
+          # Process each file from the JSON list
+          for row in $(jq -c '.[]' file_list.json); do
+            file=$(echo $row | jq -r '.file')
+            status=$(echo $row | jq -r '.status')
+            # Assuming that the file path is relative to the current directory
+            if [ -f "$file" ]; then
+              echo "Uploading $file"
+              response=$(curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                    -H "Content-Type: $(file --mime-type -b $file)" \
+                    --data-binary @"$file" \
+                    "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ needs.create-release.outputs.release_id }}/assets?name=$(basename $file)")
+              url=$(echo $response | jq -r .browser_download_url)
+              
+              # Construct JSON object and append to the array
+              jq --arg file "$file" --arg url "$url" --arg status "$status" '. += [{"name": $file, "url": $url, "status": $status}]' release-file-urls.json > temp.json && mv temp.json release-file-urls.json
+            fi
           done
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+  
       - name: Upload URL list as artifact
-        if: needs.check_updates.outputs.proceed == 'true'
+        if: needs.create-release.outputs.proceed == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: release-file-urls
           path: release-file-urls.json
-
-    
+ 
   get_skilljar_course_id:
     runs-on: ubuntu-latest
-    needs: [create-release]
+    needs: [populate-release]
     outputs:
       skilljar_course_ids: ${{ steps.extract_skilljar_course_ids.outputs.skilljar_course_ids }}
     steps:
@@ -203,6 +175,7 @@ jobs:
           echo "skilljar_course_ids=$skilljarCourseIdsJson" >> $GITHUB_OUTPUT
           echo $skilljarCourseIdsJson
 
+  #this job will run in a matrix, this means that it will run once for each course_id
   for-each-courseId-create-update-lessons:
     runs-on: ubuntu-latest
     needs: [get_skilljar_course_id]
@@ -226,6 +199,7 @@ jobs:
           echo "$response" > "skilljarResponse-${{ matrix.skilljar_course_id }}.json"
           echo "Skilljar API Response for $courseId:"
           echo "$response"
+          # I need the highest order for another call later on
           highest_order=$(echo "$response" | jq '[.results[].order] | max')
           echo "highest_order=$highest_order" >> $GITHUB_ENV
 
