@@ -10,50 +10,50 @@ jobs:
     runs-on: ubuntu-latest
     name: Test changed files
     outputs:
-      proceed: ${{ steps.filter_files.outputs.proceed }}
+      proceed: ${{ steps.filter-files.outputs.proceed }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Get new and changed files in repository
-        id: filter-files
+        id: filter-files  # Ensure this matches the ID used in the expressions below
         uses: tj-actions/changed-files@v44
         with:
           files: |
-             **.md
-             **.png
-             **.jpg
-             **.jpeg
+              **.md
+              **.png
+              **.jpg
+              **.jpeg
+
       - name: Write directories with changed and new files
         run: |
-             proceed=false
-             new_relevant_dirs=''
-             updated_relevant_dirs=''
-             # Filter new directories
-             if [[ -n "${{ steps.filter_files.outputs.added_files }}" ]]; then
-               echo "${{ steps.filter_files.outputs.added_files }}" | grep 'en/lessons/' > new_relevant_dirs.txt
-               if [[ -s new_relevant_dirs.txt ]]; then
-                 proceed=true
-                 new_relevant_dirs=$(cat new_relevant_dirs.txt)
-                 echo "New relevant directories:"
-                 cat new_relevant_dirs.txt
-               fi
-             fi
-             # Filter updated directories
-             if [[ -n "${{ steps.filter_files.outputs.modified_files }}" ]]; then
-               echo "${{ steps.filter_files.outputs.modified_files }}" | grep 'en/lessons/' > updated_relevant_dirs.txt
-               if [[ -s updated_relevant_dirs.txt ]]; then
-                 proceed=true
-                 updated_relevant_dirs=$(cat updated_relevant_dirs.txt)
-                 echo "Updated relevant directories:"
-                 cat updated_relevant_dirs.txt
-               fi
-             fi
-             echo "proceed=$proceed" >> $GITHUB_OUTPUT
-
-        
+              proceed=false
+              new_relevant_dirs=''
+              updated_relevant_dirs=''
+              # Filter new directories
+              if [[ -n "${{ steps.filter-files.outputs.added_files }}" ]]; then
+                echo "${{ steps.filter-files.outputs.added_files }}" | grep 'en/lessons/' > new_relevant_dirs.txt
+                if [[ -s new_relevant_dirs.txt ]]; then
+                  proceed=true
+                  new_relevant_dirs=$(cat new_relevant_dirs.txt)
+                  echo "New relevant directories:"
+                  cat new_relevant_dirs.txt
+                fi
+              fi
+              # Filter updated directories
+              if [[ -n "${{ steps.filter-files.outputs.modified_files }}" ]]; then
+                echo "${{ steps.filter-files.outputs.modified_files }}" | grep 'en/lessons/' > updated_relevant_dirs.txt
+                if [[ -s updated_relevant_dirs.txt ]]; then
+                  proceed=true
+                  updated_relevant_dirs=$(cat updated_relevant_dirs.txt)
+                  echo "Updated relevant directories:"
+                  cat updated_relevant_dirs.txt
+                fi
+              fi
+              echo "proceed=$proceed" >> $GITHUB_OUTPUT     
+              
       # Upload new relevant directories list as artifact
       - name: Upload new relevant directories list as artifact
-        if: steps.filter_files.outputs.new_relevant_dirs != ''
+        if: steps.filter-files.outputs.new_relevant_dirs != ''
         uses: actions/upload-artifact@v4
         with:
           name: new-relevant-dirs
@@ -61,7 +61,7 @@ jobs:
 
       # Upload updated relevant directories list as artifact
       - name: Upload updated relevant directories list as artifact
-        if: steps.filter_files.outputs.updated_relevant_dirs != ''
+        if: steps.filter-files.outputs.updated_relevant_dirs != ''
         uses: actions/upload-artifact@v4
         with:
           name: updated-relevant-dirs
