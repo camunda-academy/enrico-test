@@ -134,10 +134,10 @@ jobs:
           for row in $(jq -c '.[]' file_list.json); do
             file=$(echo $row | jq -r '.file')
             status=$(echo $row | jq -r '.status')
-      
+        
             # Extract the base directory name (e.g., "exercise-1") from the file path
             base_dir=$(basename $(dirname $file))
-      
+        
             # Find the corresponding zip file in the ./ directory
             # The zip file name pattern is based on the base directory name
             zip_file=$(find ./ -name "${base_dir}-*.zip" -print -quit)
@@ -147,9 +147,18 @@ jobs:
               response=$(curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
                     -H "Content-Type: $(file --mime-type -b "$zip_file")" \
                     --data-binary @"$zip_file" \
+                    -w "%{http_code}" \
                     "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ needs.create-release.outputs.release_id }}/assets?name=$(basename "$zip_file")")
-              echo $response
-              url=$(echo $response | jq -r .browser_download_url)
+              http_status="${response: -3}"
+              response_body="${response::-3}"
+              if [ "$http_status" -eq 201 ]; then
+                echo "Upload successful."
+                url=$(echo $response_body | jq -r .browser_download_url)
+                echo "File URL: $url"
+              else
+                echo "Upload failed with status $http_status."
+                echo "Response: $response_body"
+              fi
               
               # Construct JSON object and append to the array
               jq --arg zip_file "$zip_file" --arg url "$url" --arg status "$status" '. += [{"name": $zip_file, "url": $url, "status": $status}]' release-file-urls.json > temp.json && mv temp.json release-file-urls.json
