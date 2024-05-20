@@ -149,7 +149,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   
       - name: Upload URL list as artifact
-        if: needs.create-release.outputs.proceed == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: release-file-urls
