@@ -113,7 +113,8 @@ jobs:
           # Save the release ID as an environment variable and as a step output
           echo "release_id=$release_id" >> $GITHUB_ENV
           echo "release_id=$release_id" >> $GITHUB_OUTPUT
-          
+        env:
+          GH_TOKEN: ${{ github.token }}  
   populate-release:
     name: Upload files to the release
     needs: create-release
