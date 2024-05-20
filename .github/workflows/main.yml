@@ -154,28 +154,32 @@ jobs:
             zip_file=$(find ./ -name "${base_dir}-*.zip" -print -quit)
             
             if [[ -f "$zip_file" ]]; then
-              echo "Uploading $zip_file"
-              upload_url="https://uploads.github.com/repos/${{ github.repository }}/releases/${{ needs.create-release.outputs.release_id }}/assets?name=$(basename "$zip_file")"
-      
-              # Echo the upload URL for debugging
-              echo "Upload URL: $upload_url"
-              response=$(curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-                    -H "Content-Type: $(file --mime-type -b "$zip_file")" \
-                    --data-binary @"$zip_file" \
-                    "$upload_url")
-              http_status="${response: -3}"
-              response_body="${response::-3}"
-              if [ "$http_status" -eq 201 ]; then
-                echo "Upload successful."
-                url=$(echo $response_body | jq -r .browser_download_url)
-                echo "File URL: $url"
-              else
-                echo "Upload failed with status $http_status."
-                echo "Response: $response_body"
-              fi
+            echo "Uploading $zip_file"
+            upload_url="https://uploads.github.com/repos/${{ github.repository }}/releases/${{ needs.create-release.outputs.release_id }}/assets?name=$(basename "$zip_file")"
+            
+            # Echo the upload URL for debugging
+            echo "Upload URL: $upload_url"
+            
+            # Use the upload URL in the curl command and separate the response body and status code
+            http_status=$(curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                -H "Content-Type: $(file --mime-type -b "$zip_file")" \
+                --data-binary @"$zip_file" \
+                -o response.json -w "%{http_code}" \
+                "$upload_url")
+            
+            # Check the HTTP status code
+            if [ "$http_status" -eq 201 ]; then
+              echo "Upload successful."
+              url=$(jq -r .browser_download_url response.json)
+              echo "File URL: $url"
+            else
+              echo "Upload failed with status $http_status."
+              cat response.json
+            fi
               
               # Construct JSON object and append to the array
-              jq --arg zip_file "$zip_file" --arg url "$url" --arg status "$status" '. += [{"name": $zip_file, "url": $url, "status": $status}]' release-file-urls.json > temp.json && mv temp.json release-file-urls.json
+              jq --arg zip_file "$zip_file" --arg url "$url" --arg status "$status" \
+              '. += [{"name": $zip_file, "url": $url, "status": $status}]' release-file-urls.json > temp.json && mv temp.json release-file-urls.json
             else
               echo "Zip file for $base_dir does not exist."
             fi
