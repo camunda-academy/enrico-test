@@ -6,9 +6,9 @@ on:
       - refactoring
 
 jobs:
-  changed_files:
+  check_updates:
     runs-on: ubuntu-latest
-    name: Test changed files
+    name: Check repositories for updates in relevant files
     outputs:
       proceed: ${{ steps.create_file_list.outputs.proceed }}
     steps:
@@ -69,29 +69,31 @@ jobs:
           path: file_list.json
           
   create-release:
-    needs: changed_files
+    name: Build and create release
+    needs: check_updates
     runs-on: ubuntu-latest
-    outputs:
-      proceed: ${{ steps.filter_dirs.outputs.proceed }}
-    if: needs.changed_files.outputs.proceed == 'true'
+    if: needs.check_updates.outputs.proceed == 'true'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         
       - name: Setup Jar File Path
-        id: setup-jar-path
         run: echo "jar-path=academy-md-html-0.2.jar" >> $GITHUB_ENV
       
       - name: Download Release builder Artifact from Repository "academy-md-html"
-        # "https://github.com/camunda-academy/academy-md-html/releases/download/v0.2/${{ env.jar-path }}" \
-        # -H "Authorization: Bearer ${{ secrets.PAT }}"
         run: |
           curl -fSL -o ${{ env.jar-path }} \
           "https://github.com/ecuriotto/converter-example/releases/download/0.2/${{ env.jar-path }}"
         
-      - name: Execute JAR file
+      - name: Build zip files
         run: java -jar ${{ env.jar-path }} ./en
-
+  
+      - name: Upload Zip Files as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zip-files
+          path: ./target/*.zip
+  
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -102,7 +104,15 @@ jobs:
           release_name: Release for ${{ github.sha }}
           draft: false
           prerelease: false
+  
+      - name: Save Release ID
+        run: echo "release_id=${{ steps.create_release.outputs.id }}" >> $GITHUB_OUTPUT
           
+  populate-release:
+    name: Upload files to the release
+    needs: create-release
+    runs-on: ubuntu-latest
+    steps: 
       - name: Download new relevant directories artifact
         id: download-new-relevant-directories
         uses: actions/download-artifact@v4
@@ -166,7 +176,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload URL list as artifact
-        if: needs.changed_files.outputs.proceed == 'true'
+        if: needs.check_updates.outputs.proceed == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: release-file-urls
