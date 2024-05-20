@@ -3,22 +3,19 @@ name: Create zip files of updated lessons and deploy to skilljar
 on:
   push:
     branches:
-      - master
+      - refactoring
 
 jobs:
-  # ------------------------------------------------------------------------------------------------------------------------------------------------
-  # Event `pull_request`: Compare the last commit of the main branch or last remote commit of the PR branch -> to the current commit of a PR branch.
-  # ------------------------------------------------------------------------------------------------------------------------------------------------
   changed_files:
     runs-on: ubuntu-latest
-    name: Test changed-files
+    name: Test changed files
     outputs:
-      proceed: ${{ steps.filter_new_dirs.outputs.proceed || steps.filter_updated_dirs.outputs.proceed }}
+      proceed: ${{ steps.filter_files.outputs.proceed }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Get all changed markdown files
-        id: changed-markdown-files
+      - name: Get new and changed files in repository
+        id: filter-files
         uses: tj-actions/changed-files@v44
         with:
           files: |
@@ -26,59 +23,41 @@ jobs:
              **.png
              **.jpg
              **.jpeg
-      - name: Check if at least one file is updated or created
-        id: set_created_or_updated_file
-        run: echo "created_or_updated_files=${{ steps.changed-markdown-files.outputs.any_changed == 'true' }}" >> $GITHUB_OUTPUT           
+      - name: Write directories with changed and new files
+        run: |
+             proceed=false
+             new_relevant_dirs=''
+             updated_relevant_dirs=''
+             # Filter new directories
+             if [[ -n "${{ steps.filter_files.outputs.added_files }}" ]]; then
+               echo "${{ steps.filter_files.outputs.added_files }}" | grep 'en/lessons/' > new_relevant_dirs.txt
+               if [[ -s new_relevant_dirs.txt ]]; then
+                 proceed=true
+                 new_relevant_dirs=$(cat new_relevant_dirs.txt)
+               fi
+             fi
+             # Filter updated directories
+             if [[ -n "${{ steps.filter_files.outputs.modified_files }}" ]]; then
+               echo "${{ steps.filter_files.outputs.modified_files }}" | grep 'en/lessons/' > updated_relevant_dirs.txt
+               if [[ -s updated_relevant_dirs.txt ]]; then
+                 proceed=true
+                 updated_relevant_dirs=$(cat updated_relevant_dirs.txt)
+               fi
+             fi
+             echo "proceed=$proceed" >> $GITHUB_OUTPUT
 
-      - name: Save new Markdown or image files to file
-        if: steps.changed-markdown-files.outputs.added_files != ''
-        run: |
-          echo "${{ steps.changed-markdown-files.outputs.added_files }}" > new-files.txt
-          cat new-files.txt
-  
-      - name: Save updated Markdown or image files to file
-        if: steps.changed-markdown-files.outputs.modified_files != ''
-        run: |
-          echo "${{ steps.changed-markdown-files.outputs.modified_files }}" > updated-files.txt
-          cat updated-files.txt
-
-      # Filter new files
-      - name: Filter new directories
-        id: filter_new_dirs
-        if: steps.changed-markdown-files.outputs.added_files != ''
-        run: |
-         if grep -oP 'en/lessons/\K[^/]*' new-files.txt > new_relevant_dirs.txt; then
-           echo "New relevant directories found. Proceeding with the job."
-           echo "proceed=true" >> $GITHUB_OUTPUT
-         else
-           echo "No new relevant directories found."
-           echo "proceed=false" >> $GITHUB_OUTPUT
-         fi
-
-     # Filter updated files
-      - name: Filter updated directories
-        id: filter_updated_dirs
-        if: steps.changed-markdown-files.outputs.modified_files != ''
-        run: |
-         if grep -oP 'en/lessons/\K[^/]*' updated-files.txt > updated_relevant_dirs.txt; then
-          echo "Updated relevant directories found. Proceeding with the job."
-          echo "proceed=true" >> $GITHUB_OUTPUT
-         else
-          echo "No updated relevant directories found."
-          echo "proceed=false" >> $GITHUB_OUTPUT
-         fi
         
-     # Upload new relevant directories list as artifact
+      # Upload new relevant directories list as artifact
       - name: Upload new relevant directories list as artifact
-        if: steps.filter_new_dirs.outputs.proceed == 'true'
+        if: steps.filter_files.outputs.new_relevant_dirs != ''
         uses: actions/upload-artifact@v4
         with:
           name: new-relevant-dirs
           path: new_relevant_dirs.txt
-        
-     # Upload updated relevant directories list as artifact
+
+      # Upload updated relevant directories list as artifact
       - name: Upload updated relevant directories list as artifact
-        if: steps.filter_updated_dirs.outputs.proceed == 'true'
+        if: steps.filter_files.outputs.updated_relevant_dirs != ''
         uses: actions/upload-artifact@v4
         with:
           name: updated-relevant-dirs
