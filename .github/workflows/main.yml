@@ -34,6 +34,8 @@ jobs:
                if [[ -s new_relevant_dirs.txt ]]; then
                  proceed=true
                  new_relevant_dirs=$(cat new_relevant_dirs.txt)
+                 echo "New relevant directories:"
+                 cat new_relevant_dirs.txt
                fi
              fi
              # Filter updated directories
@@ -42,6 +44,8 @@ jobs:
                if [[ -s updated_relevant_dirs.txt ]]; then
                  proceed=true
                  updated_relevant_dirs=$(cat updated_relevant_dirs.txt)
+                 echo "Updated relevant directories:"
+                 cat updated_relevant_dirs.txt
                fi
              fi
              echo "proceed=$proceed" >> $GITHUB_OUTPUT
