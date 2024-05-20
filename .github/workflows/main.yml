@@ -72,6 +72,8 @@ jobs:
     name: Build and create release
     needs: check_updates
     runs-on: ubuntu-latest
+    outputs:
+      release_id: ${{ steps.create_release.outputs.release_id }}
     if: needs.check_updates.outputs.proceed == 'true'
     steps:
       - name: Checkout code
@@ -96,17 +98,22 @@ jobs:
   
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1.1.4
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: release-${{ github.sha }}
-          release_name: Release for ${{ github.sha }}
-          draft: false
-          prerelease: false
+        run: |
+          release_id=$(gh release create release-${{ github.sha }} \
+            --title "Release for ${{ github.sha }}" \
+            --notes "Release notes or description" \
+            --draft=false \
+            --prerelease=false \
+            --repo ${{ github.repository }} \
+            --json id \
+            --jq '.id')
+          echo "Release ID: $release_id"
+          echo "release_id=$release_id" >> $GITHUB_OUTPUT
+      - name: Debug Release ID
+        run: |
+          echo "Release ID: ${{ steps.create_release.outputs.id }}"
   
-      - name: Save Release ID
-        run: echo "release_id=${{ steps.create_release.outputs.id }}" >> $GITHUB_OUTPUT
+
           
   populate-release:
     name: Upload files to the release
