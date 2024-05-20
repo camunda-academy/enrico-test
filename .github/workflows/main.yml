@@ -137,9 +137,9 @@ jobs:
             # Extract the base directory name (e.g., "exercise-1") from the file path
             base_dir=$(basename $(dirname $file))
       
-            # Find the corresponding zip file in the ./en/target directory
+            # Find the corresponding zip file in the ./ directory
             # The zip file name pattern is based on the base directory name
-            zip_file=$(find ./en/target -name "${base_dir}-*.zip" -print -quit)
+            zip_file=$(find ./ -name "${base_dir}-*.zip" -print -quit)
             
             if [[ -f "$zip_file" ]]; then
               echo "Uploading $zip_file"
