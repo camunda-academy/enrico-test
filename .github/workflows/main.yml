@@ -3,12 +3,12 @@ name: Create zip files of updated lessons and deploy to skilljar
 on:
   push:
     branches:
-      - refactoring
+      - master
 
 jobs:
   check_updates:
     runs-on: ubuntu-latest
-    name: Check repositories for updates in relevant files
+    name: Check for files updated or created
     outputs:
       proceed: ${{ steps.create_file_list.outputs.proceed }}
     steps:
@@ -200,7 +200,8 @@ jobs:
           name: release-file-urls
           path: release-file-urls.json
  
-  get_skilljar_course_id:
+  get-skilljar-course-id:
+    name: Get Skilljar course id
     runs-on: ubuntu-latest
     needs: [populate-release]
     outputs:
@@ -222,12 +223,13 @@ jobs:
 
   #this job will run in a matrix, this means that it will run once for each course_id
   for-each-courseId-create-update-lessons:
+    name: Create/Upd lesson for each course id
     runs-on: ubuntu-latest
-    needs: [get_skilljar_course_id]
+    needs: [get-skilljar-course-id]
     strategy:
       fail-fast: false
       matrix:
-        skilljar_course_id: ${{ fromJson(needs.get_skilljar_course_id.outputs.skilljar_course_ids) }}
+        skilljar_course_id: ${{ fromJson(needs.get-skilljar-course-id.outputs.skilljar_course_ids) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
