@@ -179,7 +179,7 @@ jobs:
               
               # Construct JSON object and append to the array
               jq --arg zip_file "$(basename "$zip_file")" --arg url "$url" --arg status "$status" \
-              '. += [{"name": $zip_file, "url": $url, "status": $status}]' release-file-urls.json > temp.json
+              '. += [{"name": $zip_file, "url": $url, "status": $status}]' release-file-urls.json > temp.json && mv temp.json release-file-urls.json
             else
               echo "Zip file for $base_dir does not exist."
             fi
