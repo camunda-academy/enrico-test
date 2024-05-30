@@ -6,192 +6,204 @@ on:
       - master
 
 jobs:
-  # ------------------------------------------------------------------------------------------------------------------------------------------------
-  # Event `pull_request`: Compare the last commit of the main branch or last remote commit of the PR branch -> to the current commit of a PR branch.
-  # ------------------------------------------------------------------------------------------------------------------------------------------------
-  changed_files:
+  check_updates:
     runs-on: ubuntu-latest
-    name: Test changed-files
+    name: Check for files updated or created
     outputs:
-      proceed: ${{ steps.filter_new_dirs.outputs.proceed || steps.filter_updated_dirs.outputs.proceed }}
+      proceed: ${{ steps.create_file_list.outputs.proceed }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Get all changed markdown files
-        id: changed-markdown-files
+      - name: Get new and changed files in repository
+        id: changed-files
         uses: tj-actions/changed-files@v44
         with:
           files: |
-             **.md
-             **.png
-             **.jpg
-             **.jpeg
-      - name: Check if at least one file is updated or created
-        id: set_created_or_updated_file
-        run: echo "created_or_updated_files=${{ steps.changed-markdown-files.outputs.any_changed == 'true' }}" >> $GITHUB_OUTPUT           
+              **.md
+              **.png
+              **.jpg
+              **.jpeg
 
-      - name: Save new Markdown or image files to file
-        if: steps.changed-markdown-files.outputs.added_files != ''
+      - name: Create list of new and updated files
+        id: create_file_list
         run: |
-          echo "${{ steps.changed-markdown-files.outputs.added_files }}" > new-files.txt
-          cat new-files.txt
-  
-      - name: Save updated Markdown or image files to file
-        if: steps.changed-markdown-files.outputs.modified_files != ''
-        run: |
-          echo "${{ steps.changed-markdown-files.outputs.modified_files }}" > updated-files.txt
-          cat updated-files.txt
+          file_list=()
+          proceed=false
 
-      # Filter new files
-      - name: Filter new directories
-        id: filter_new_dirs
-        if: steps.changed-markdown-files.outputs.added_files != ''
-        run: |
-         if grep -oP 'en/lessons/\K[^/]*' new-files.txt > new_relevant_dirs.txt; then
-           echo "New relevant directories found. Proceeding with the job."
-           echo "proceed=true" >> $GITHUB_OUTPUT
-         else
-           echo "No new relevant directories found."
-           echo "proceed=false" >> $GITHUB_OUTPUT
-         fi
+          # Read new files
+          if [[ -n "${{ steps.changed-files.outputs.added_files }}" ]]; then
+            for file in ${{ steps.changed-files.outputs.added_files }}; do
+              [[ $file == en/lessons/* ]] && file_list+=("{\"file\":\"$file\",\"status\":\"new\"}")
+            done
+          fi
 
-     # Filter updated files
-      - name: Filter updated directories
-        id: filter_updated_dirs
-        if: steps.changed-markdown-files.outputs.modified_files != ''
-        run: |
-         if grep -oP 'en/lessons/\K[^/]*' updated-files.txt > updated_relevant_dirs.txt; then
-          echo "Updated relevant directories found. Proceeding with the job."
-          echo "proceed=true" >> $GITHUB_OUTPUT
-         else
-          echo "No updated relevant directories found."
-          echo "proceed=false" >> $GITHUB_OUTPUT
-         fi
-        
-     # Upload new relevant directories list as artifact
-      - name: Upload new relevant directories list as artifact
-        if: steps.filter_new_dirs.outputs.proceed == 'true'
+          # Read updated files
+          if [[ -n "${{ steps.changed-files.outputs.modified_files }}" ]]; then
+            for file in ${{ steps.changed-files.outputs.modified_files }}; do
+              [[ $file == en/lessons/* ]] && file_list+=("{\"file\":\"$file\",\"status\":\"updated\"}")
+            done
+          fi
+          # Check if the file list is not empty
+          if [[ ${#file_list[@]} -gt 0 ]]; then
+            proceed=true
+            # Create JSON array
+            printf "[%s]" "$(IFS=,; echo "${file_list[*]}")" > file_list.json
+          else
+            # Create an empty JSON array
+            echo "[]" > file_list.json
+          fi
+
+          echo "File list:"
+          cat file_list.json
+
+          # Set outputs
+          echo "proceed=$proceed" >> $GITHUB_OUTPUT
+          
+
+      # Upload the file list as an artifact
+      - name: Upload file list as an artifact
+        if: steps.create_file_list.outputs.proceed == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: new-relevant-dirs
-          path: new_relevant_dirs.txt
-        
-     # Upload updated relevant directories list as artifact
-      - name: Upload updated relevant directories list as artifact
-        if: steps.filter_updated_dirs.outputs.proceed == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: updated-relevant-dirs
-          path: updated_relevant_dirs.txt
+          name: file-list-artifact
+          path: file_list.json
           
   create-release:
-    needs: changed_files
+    name: Build and create release
+    needs: check_updates
     runs-on: ubuntu-latest
     outputs:
-      proceed: ${{ steps.filter_dirs.outputs.proceed }}
-    if: needs.changed_files.outputs.proceed == 'true'
+      release_id: ${{ steps.create_release.outputs.release_id }}
+    if: needs.check_updates.outputs.proceed == 'true'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         
       - name: Setup Jar File Path
-        id: setup-jar-path
         run: echo "jar-path=academy-md-html-0.2.jar" >> $GITHUB_ENV
       
       - name: Download Release builder Artifact from Repository "academy-md-html"
-        # "https://github.com/camunda-academy/academy-md-html/releases/download/v0.2/${{ env.jar-path }}" \
-        # -H "Authorization: Bearer ${{ secrets.PAT }}"
         run: |
           curl -fSL -o ${{ env.jar-path }} \
           "https://github.com/ecuriotto/converter-example/releases/download/0.2/${{ env.jar-path }}"
         
-      - name: Execute JAR file
+      - name: Build zip files
         run: java -jar ${{ env.jar-path }} ./en
-
+  
+      - name: Upload Zip Files as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: all-zip-files
+          path: ./en/target/*.zip
+  
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: release-${{ github.sha }}
-          release_name: Release for ${{ github.sha }}
-          draft: false
-          prerelease: false
+        run: |
+          # Create the release and capture the URL of the created release
+          release_url=$(gh release create release-${{ github.sha }} \
+            --title "Release for ${{ github.sha }}" \
+            --notes "Release notes or description" \
+            --draft=false \
+            --prerelease=false)
+          echo "Release URL: $release_url"
           
-      - name: Download new relevant directories artifact
-        id: download-new-relevant-directories
+          # Use GitHub API to fetch the release ID by the tag name
+          release_data=$(curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/tags/release-${{ github.sha }}")
+          
+          # Extract the numerical ID from the release data
+          release_id=$(echo "$release_data" | jq '.id')
+          echo "Release ID: $release_id"
+      
+          # Save the release ID as a step output
+          echo "release_id=$release_id" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ github.token }}  
+  populate-release:
+    name: Upload files to the release
+    needs: create-release
+    runs-on: ubuntu-latest
+    steps: 
+      - name: Download file list artifact
         uses: actions/download-artifact@v4
         with:
-          name: new-relevant-dirs
-        # If the artifact does not exist, this step will not fail the job.
-        continue-on-error: true
+          name: file-list-artifact
   
-      - name: Download updated relevant directories artifact
-        id: download-updated-relevant-directories
+      - name: Download all zip files artifact
         uses: actions/download-artifact@v4
         with:
-          name: updated-relevant-dirs
-        # If the artifact does not exist, this step will not fail the job.
-        continue-on-error: true
-
-      - name: Print message if artifact not found
-        if: ${{ steps.download-new-relevant-directories.outcome == 'failure' || steps.download-updated-relevant-directories.outcome == 'failure' }}
+          name: all-zip-files
+  
+      - name: Upload zip files to release
         run: |
-          echo "One or more artifacts not found but this may be ok, let's go on!"
-
-      - name: Find, Upload Each Relevant File, and Save URLs
-        run: |
+          echo "List of files in ./"
+          ls -l
           # Initialize or clear the JSON file that will store the URLs
           echo "[]" > release-file-urls.json
           
-          # Process each new directory
-          for dir in $(cat new_relevant_dirs.txt); do
-            for file in ./en/target/${dir}*.zip; do
-              if [ -f "$file" ]; then
-                echo "Uploading $file"
-                response=$(curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-                      -H "Content-Type: $(file --mime-type -b $file)" \
-                      --data-binary @"$file" \
-                      "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_release.outputs.id }}/assets?name=$(basename $file)")
-                url=$(echo $response | jq -r .browser_download_url)
-                
-                # Construct JSON object and append to the array indicating the file is new
-                jq --arg dir "$dir" --arg url "$url" '. += [{"name": $dir, "url": $url, "status": "new"}]' release-file-urls.json > temp.json && mv temp.json release-file-urls.json
-              fi
-            done
-          done
+          # Process each file from the JSON list
+          for row in $(jq -c '.[]' file_list.json); do
+            file=$(echo $row | jq -r '.file')
+            status=$(echo $row | jq -r '.status')
+        
+            # Extract the base directory name (e.g., "exercise-1") from the file path
+            base_dir=$(basename $(dirname $file))
+        
+            # Find the corresponding zip file in the ./ directory
+            # The zip file name pattern is based on the base directory name
+            zip_file=$(find ./ -name "${base_dir}-*.zip" -print -quit)
+            
+            if [[ -f "$zip_file" ]]; then
+            echo "Uploading $zip_file"
+            upload_url="https://uploads.github.com/repos/${{ github.repository }}/releases/${{ needs.create-release.outputs.release_id }}/assets?name=$(basename "$zip_file")"
+            
+            # Echo the upload URL for debugging
+            echo "Upload URL: $upload_url"
+            
+            # Use the upload URL in the curl command and separate the response body and status code
+            http_status=$(curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                -H "Content-Type: $(file --mime-type -b "$zip_file")" \
+                --data-binary @"$zip_file" \
+                -o response.json -w "%{http_code}" \
+                "$upload_url")
+            
+            # Check the HTTP status code
+            if [ "$http_status" -eq 201 ]; then
+              echo "Upload successful."
+              url=$(jq -r .browser_download_url response.json)
+              echo "File URL: $url"
+            else
+              echo "Upload failed with status $http_status."
+              cat response.json
+            fi
+              
+            # Extract the base name without the version number and .zip extension
+            base_name=$(echo "$(basename "$zip_file")" | sed -E 's/-[0-9]+\.[0-9]+\.zip$//')
 
-          # Process each updated directory
-          for dir in $(cat updated_relevant_dirs.txt); do
-            for file in ./en/target/${dir}*.zip; do
-              if [ -f "$file" ]; then
-                echo "Uploading $file"
-                response=$(curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-                      -H "Content-Type: $(file --mime-type -b $file)" \
-                      --data-binary @"$file" \
-                      "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_release.outputs.id }}/assets?name=$(basename $file)")
-                url=$(echo $response | jq -r .browser_download_url)
-                
-                # Construct JSON object and append to the array indicating the file is updated
-                jq --arg dir "$dir" --arg url "$url" '. += [{"name": $dir, "url": $url, "status": "updated"}]' release-file-urls.json > temp.json && mv temp.json release-file-urls.json
-              fi
-            done
+            # Replace hyphens with spaces to format the name correctly
+            formatted_name=$(echo "$base_name" | tr '-' ' ')
+
+            # Construct JSON object and append to the array with the formatted name
+            jq --arg name "$formatted_name" --arg url "$url" --arg status "$status" \
+            '. += [{"name": $name, "url": $url, "status": $status}]' release-file-urls.json > temp.json && mv temp.json release-file-urls.json
+
+            else
+              echo "Zip file for $base_dir does not exist."
+            fi
           done
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+  
       - name: Upload URL list as artifact
-        if: needs.changed_files.outputs.proceed == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: release-file-urls
           path: release-file-urls.json
-
-    
-  get_skilljar_course_id:
+ 
+  get-skilljar-course-id:
+    name: Get Skilljar course id
     runs-on: ubuntu-latest
-    needs: [create-release]
+    needs: [populate-release]
     outputs:
       skilljar_course_ids: ${{ steps.extract_skilljar_course_ids.outputs.skilljar_course_ids }}
     steps:
@@ -209,13 +221,15 @@ jobs:
           echo "skilljar_course_ids=$skilljarCourseIdsJson" >> $GITHUB_OUTPUT
           echo $skilljarCourseIdsJson
 
+  #this job will run in a matrix, this means that it will run once for each course_id
   for-each-courseId-create-update-lessons:
+    name: Create/Upd lesson for each course id
     runs-on: ubuntu-latest
-    needs: [get_skilljar_course_id]
+    needs: [get-skilljar-course-id]
     strategy:
       fail-fast: false
       matrix:
-        skilljar_course_id: ${{ fromJson(needs.get_skilljar_course_id.outputs.skilljar_course_ids) }}
+        skilljar_course_id: ${{ fromJson(needs.get-skilljar-course-id.outputs.skilljar_course_ids) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -232,6 +246,7 @@ jobs:
           echo "$response" > "skilljarResponse-${{ matrix.skilljar_course_id }}.json"
           echo "Skilljar API Response for $courseId:"
           echo "$response"
+          # I need the highest order for another call later on
           highest_order=$(echo "$response" | jq '[.results[].order] | max')
           echo "highest_order=$highest_order" >> $GITHUB_ENV
 
@@ -270,10 +285,13 @@ jobs:
         
               # If the status is 'updated', attempt to find a match
               if [ "$status" == "updated" ]; then
-                # Compare the modified name with titles from the Skilljar response to find a match
+                # Normalize the name for comparison by converting to lowercase and removing the version number and .zip extension
+                modified_name=$(echo "$name" | sed -E 's/-[0-9]+\.[0-9]+\.zip$//' | tr '[:upper:]' '[:lower:]')
+
+                # Compare the name (without the version number and zip extension) with titles from the Skilljar response to find a match
                 match=$(echo "$skilljarResponse" | jq -r --arg modified_name "$modified_name" \
-                  '.results[] | select(.title | ascii_downcase | gsub(" "; "-") == $modified_name) | {id: .id, title: .title}')
-        
+                  '.results[] | select(.title | ascii_downcase == $modified_name) | {id: .id, title: .title}')
+
                 # Check if a match was found by looking for a non-empty ID
                 if [ ! -z "$(echo $match | jq -r .id)" ]; then
                   # Extract the ID and title from the matched Skilljar lesson
