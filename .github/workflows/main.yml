@@ -276,10 +276,12 @@ jobs:
         
               # If the status is 'updated', attempt to find a match
               if [ "$status" == "updated" ]; then
-                # Compare the modified name with titles from the Skilljar response to find a match
-                # Strip the version number from the file name before comparing
+                # Normalize the name for comparison by replacing spaces with hyphens and converting to lowercase
+                modified_name=$(echo "$name" | tr ' ' '-' | tr '[:upper:]' '[:lower:]' | sed 's/-[0-9]\+\.[0-9]\+\.zip$//')
+              
+                # Compare the base exercise name without the version number with titles from the Skilljar response to find a match
                 match=$(echo "$skilljarResponse" | jq -r --arg modified_name "$modified_name" \
-                  '.results[] | select(.title | ascii_downcase | gsub(" "; "-") | gsub("-[0-9]+\\.[0-9]+$"; "") == $modified_name) | {id: .id, title: .title}')
+                  '.results[] | select(.title | ascii_downcase | gsub(" "; "-") | startswith($modified_name)) | {id: .id, title: .title}')
               
                 # Check if a match was found by looking for a non-empty ID
                 if [ ! -z "$(echo $match | jq -r .id)" ]; then
@@ -291,7 +293,7 @@ jobs:
                   # Output a message if no match was found for the modified name
                   echo "No match found for $modified_name with status: $status"
                 fi
-            else
+              else
                 # For new files, leave the lesson_id empty and use the original name as the title
                 match_title="$name"
                 echo "Processing new file: $name with URL: $url and Course ID: $course_id"
