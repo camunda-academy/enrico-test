@@ -177,9 +177,16 @@ jobs:
               cat response.json
             fi
               
-              # Construct JSON object and append to the array
-              jq --arg zip_file "$(basename "$zip_file")" --arg url "$url" --arg status "$status" \
-              '. += [{"name": $zip_file, "url": $url, "status": $status}]' release-file-urls.json > temp.json && mv temp.json release-file-urls.json
+            # Extract the base name without the version number and .zip extension
+            base_name=$(echo "$(basename "$zip_file")" | sed -E 's/-[0-9]+\.[0-9]+\.zip$//')
+
+            # Replace hyphens with spaces to format the name correctly
+            formatted_name=$(echo "$base_name" | tr '-' ' ')
+
+            # Construct JSON object and append to the array with the formatted name
+            jq --arg name "$formatted_name" --arg url "$url" --arg status "$status" \
+            '. += [{"name": $name, "url": $url, "status": $status}]' release-file-urls.json > temp.json && mv temp.json release-file-urls.json
+
             else
               echo "Zip file for $base_dir does not exist."
             fi
@@ -276,13 +283,13 @@ jobs:
         
               # If the status is 'updated', attempt to find a match
               if [ "$status" == "updated" ]; then
-                # Normalize the name for comparison by replacing spaces with hyphens and converting to lowercase
-                modified_name=$(echo "$name" | tr ' ' '-' | tr '[:upper:]' '[:lower:]' | sed 's/-[0-9]\+\.[0-9]\+\.zip$//')
-              
-                # Compare the base exercise name without the version number with titles from the Skilljar response to find a match
+                # Normalize the name for comparison by converting to lowercase and removing the version number and .zip extension
+                modified_name=$(echo "$name" | sed -E 's/-[0-9]+\.[0-9]+\.zip$//' | tr '[:upper:]' '[:lower:]')
+
+                # Compare the name (without the version number and zip extension) with titles from the Skilljar response to find a match
                 match=$(echo "$skilljarResponse" | jq -r --arg modified_name "$modified_name" \
-                  '.results[] | select(.title | ascii_downcase | gsub(" "; "-") | startswith($modified_name)) | {id: .id, title: .title}')
-              
+                  '.results[] | select(.title | ascii_downcase == $modified_name) | {id: .id, title: .title}')
+
                 # Check if a match was found by looking for a non-empty ID
                 if [ ! -z "$(echo $match | jq -r .id)" ]; then
                   # Extract the ID and title from the matched Skilljar lesson
